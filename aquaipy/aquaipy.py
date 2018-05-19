@@ -33,19 +33,13 @@ class Response(Enum):
 
 class AquaIPy:
     
-    def __init__(self, host, name = None):
+    def __init__(self, name = None, firmware_version = None):
     
-        self._host = host
-        self._base_path = 'http://' + host + '/api'
+        self._base_path = None 
         self._mac_addr = None
         self._name = name
         self._product_type = None
-        self._firmware_version = None #also verify support for this version
-        
-        self._setup_device_details()
-        
-        if not self.supported_firmware:
-            raise NotImplementedError("Support is not available for this version of the AquaIllumination firmware yet.")
+        self._firmware_version = firmware_version
         
     @property
     def mac_addr(self):
@@ -158,6 +152,17 @@ class AquaIPy:
             print("Unable to retrieve HD mW values for device")
         
         return Response.Success, mW_norm, mW_hd, total_max_mW
+
+
+    def connect(self, host):
+
+        self._host = host
+        self._base_path = 'http://' + host + '/api'
+
+        self._setup_device_details()
+        
+        if not self.supported_firmware:
+            raise NotImplementedError("Support is not available for this version of the AquaIllumination firmware yet.")
 
         
     #######################################################
