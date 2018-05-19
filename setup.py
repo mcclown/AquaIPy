@@ -19,7 +19,9 @@ def read(*filenames, **kwargs):
             buf.append(f.read())
     return sep.join(buf)
 
-long_description = read('README.txt', 'CHANGES.txt')
+
+# Original, need to create README.rst with pandoc - long_description = read('README.txt', 'CHANGES.txt')
+long_description = read('README.md')
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -34,7 +36,7 @@ class PyTest(TestCommand):
 
 setup(
     name='AquaIPy',
-    version=aquaipy.__version__,
+    version=aquaipy._version_,
     url='http://github.com/mcclown/AquaIPy/',
     license='Apache Software License',
     author='Stephen Mc Gowan',
@@ -44,7 +46,7 @@ setup(
     author_email='mcclown@gmail.com',
     description='Python library for controlling the AquaIllumination range of aquarium lights',
     long_description=long_description,
-    packages=['AquaIPy'],
+    packages=['aquaipy'],
     include_package_data=True,
     platforms='any',
     test_suite='aquaipy.test.test_aquipy',
