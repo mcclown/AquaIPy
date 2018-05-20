@@ -84,12 +84,12 @@ class AquaIPy:
         """
         Get raw intensity values back from API
         """
-         
+        print("here") 
         r = requests.get(self._base_path + "/colors")
         
         r_data = None
         r_data = r.json()
-    
+            
         if r_data["response_code"] != 0:
             return Response.Error, r_data
  
@@ -169,8 +169,8 @@ class AquaIPy:
     # Get/Set Manual Control (ie. Not using light schedule)
     #######################################################
         
-    def get_light_schedule(self):
-        """get_light_control
+    def get_schedule_state(self):
+        """get_schedule_state
         Get the current status of light schedule control (enabled/disabled).
         """
 
@@ -184,13 +184,13 @@ class AquaIPy:
                 return Response.Error, r_data
                 
         except Exception as ex:
-            return Response.Error, None
+            return None
 
-        return Response.Success, r_data["enable"]
+        return r_data["enable"]
 
     
-    def set_light_schedule(self, enable):
-        """set_light_control
+    def set_schedule_state(self, enable):
+        """set_schedule_state
         Enable or disable the light schedule
         """
         data = {"enable": enable}
