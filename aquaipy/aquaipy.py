@@ -33,13 +33,13 @@ class Response(Enum):
 
 class AquaIPy:
     
-    def __init__(self, name = None, firmware_version = None):
+    def __init__(self, name = None):
     
         self._base_path = None 
         self._mac_addr = None
         self._name = name
         self._product_type = None
-        self._firmware_version = firmware_version
+        self._firmware_version = None
         
     @property
     def mac_addr(self):
@@ -57,7 +57,14 @@ class AquaIPy:
     def supported_firmware(self):
         return (StrictVersion(self._firmware_version) <= StrictVersion(MAX_SUPPORTED_AI_FIRMWARE_VERSION)) and (StrictVersion(self._firmware_version) >= StrictVersion(MIN_SUPPORTED_AI_FIRMWARE_VERSION))
 
-    
+    @property
+    def base_path(self):
+        return self._base_path
+
+    @property
+    def firmware_version(self):
+        return self._firmware_version
+
     ##################
     # Internal Methods
     ##################
@@ -73,7 +80,7 @@ class AquaIPy:
         r_data = r.json()
         
         if r_data['response_code'] != 0:
-            raise ConnectionError("Error connecting to host [" + self._host + "] - Response: " + r_data)
+            raise ConnectionError("Error connecting to host [" + self._host + "]")
             
         self._mac_addr = r_data['serial_number']
         self._firmware_version = r_data['firmware']
@@ -91,7 +98,7 @@ class AquaIPy:
         r_data = r.json()
             
         if r_data["response_code"] != 0:
-            return Response.Error, r_data
+            return Response.Error, None
  
         del r_data["response_code"]
 
@@ -109,10 +116,10 @@ class AquaIPy:
         r_data = r.json()
 
         if r_data["response_code"] == 0:
-            return Responce.Success, r_data
+            return Response.Success
         else:
             print(r_data)
-            return Responce.Error, r_data
+            return Response.Error
 
             
     def _get_mW_limits(self):
@@ -131,7 +138,7 @@ class AquaIPy:
         r_data = r.json()
     
         if r_data["response_code"] != 0:
-            return Response.Error, r_data, None, None
+            return Response.Error, None, None, None
  
         #Only handling the first device for the moment. In mixed HD & non-HD setups, devices are limited to non-HD modes, as far as I can tell.
 
@@ -203,7 +210,7 @@ class AquaIPy:
             r_data = r.json()
             
             if r_data['response_code'] != 0:
-                return Response.Error, r_data
+                return Response.Error
             
         except Exception as ex:
             print("Unable to set light control: ", ex)
@@ -229,7 +236,7 @@ class AquaIPy:
             resp, data = self._get_brightness()
             
             if resp != Response.Success:
-                return resp
+                return resp, None
 
             for color in data:
                 colors.append(color)
@@ -250,10 +257,13 @@ class AquaIPy:
         try:
             
             #Get current brightness, for each colour channel
-            resp, brightness = self._get_brightness()
+            resp_b, brightness = self._get_brightness()
+
+            if resp_b != Response.Success:
+                return resp_b, None
             
             #Get the power limits that represent 100%
-            resp, mW_norm, mW_hd, total_max_mW = self._get_mW_limits()
+            resp_l = mW_norm = mW_hd = total_max_mW = None
      
             for color, value in brightness.items():
                 #Calculate the %power
@@ -262,6 +272,13 @@ class AquaIPy:
                     colors[color] = round(value/10)
                 else:
                     #Should never hit this case for a non-HD AI device. #ToTest
+
+                    #Only retrieve this info once, if it's required.
+                    if resp_l == None:
+                        resp_l, mW_norm, mW_hd, total_max_mW = self._get_mW_limits()
+
+                        if resp_l != Response.Success:
+                            return resp_l, None
 
                     #Calculate max percentage, when using HD
                     max_percentage = (mW_hd[color] / mW_norm[color]) * 100
@@ -292,7 +309,14 @@ class AquaIPy:
             response, brightness = self._get_brightness()
             
             for color, value in dict.items():
-                brightness[color] = value * 10
+                #TODO Placeholder, limit to values of 100%, until HD support is added
+                temp = value * 10
+                if temp < 0:
+                    temp = 0
+                elif temp > 1000:
+                    temp = 1000
+
+                brightness[color] = temp
 
             return self._set_brightness(brightness)
 
