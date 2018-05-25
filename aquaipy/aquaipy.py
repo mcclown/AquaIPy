@@ -30,6 +30,11 @@ class Response(Enum):
     Success = 0
     Error = 1
     NoSuchColour = 2
+    InvalidBrightnessValue = 3
+    PowerLimitsExceeded = 4
+    AllColorsMustBeSpecifed = 5
+    InvalidData = 6
+
 
 class AquaIPy:
     
@@ -91,7 +96,6 @@ class AquaIPy:
         """
         Get raw intensity values back from API
         """
-        print("here") 
         r = requests.get(self._base_path + "/colors")
         
         r_data = None
@@ -295,62 +299,78 @@ class AquaIPy:
         
         return Response.Success, colors
 
-        
-    def set_color_brightness(self, dict):
+    def set_color_brightness(self, colors):
         """set_color_brightness
-        Update the specified color brightness.
+        Update all colors to the specified color percentage. All colors must be specified.
         """
-
-        #Some validation here
-        if len(dict) < 1:
-            return Response.NoSuchColour
+        
+        #Need to add better validation here
+        if len(colors) == 0 or len(colors) < len(self.get_colors()):
+            return Response.InvalidData
 
         try:
-            response, brightness = self._get_brightness()
             
-            for color, value in dict.items():
-                #TODO Placeholder, limit to values of 100%, until HD support is added
-                temp = value * 10
-                if temp < 0:
-                    temp = 0
-                elif temp > 1000:
-                    temp = 1000
+            response, mW_norm, mW_hd, total_mW_limit = self._get_mW_limits()
+            
+            #                           10 * HD_Percentage * Normal_Max_mW 
+            #  Brightness Value =   ------------------------------------------   + 1000  
+            #                               HD_Max_mW - Normal_Max_mW
+            
+            for color, value in colors.items():
 
-                brightness[color] = temp
+                if value < 0:
+                    colors[color] = 0
+                elif 0 <= value <= 100:
+                    colors[color] = value * 10
+                else:
+                    top = 10 * (value - 100) * mW_norm[color]
+                    bottom = mW_hd[color] - mW_norm[color]
 
-            return self._set_brightness(brightness)
+                    colors[color] = int((top/bottom) + 1000)
+             
+            return self._set_brightness(colors)
 
         except Exception as ex:
-            print("Error processing set_color_brightness response: ", traceback.format_exc())
+            print("Error processing set_color_brightness", traceback.format_exc())
+            return Response.Error
+
+        
+    def patch_color_brightness(self, colors):
+        """patch_color_brightness
+        Update to the specified color percentage brightness.
+        """
+
+        if len(colors) < 1:
+            return Response.InvalidData
+
+        try:
+            response, brightness = self.get_color_brightness()
+
+            for color, value in colors.items():
+                brightness[color] = value
+
+            return self.set_color_brightness(brightness)
+
+        except Exception as ex:
+            print("Error processing patch_color_brightness response: ", traceback.format_exc())
             return Response.Error
      
-        return Response.Success
     
-    def update_color_brightness(self, dict):
+    def update_color_brightness(self, colors):
         """update_color_brightness
         Update a given color by the specified brightness percentage.
         """
         
-        #Add some validation here
-        
-        if len(dict) < 1:
-            return Response.NoSuchColour
+        if len(colors) < 1:
+            return Response.InvalidData
 
         try:
-            response, brightness = self._get_brightness()
+            response, brightness = self.get_color_brightness()
             
-            for color, value in dict.items():
-                temp = brightness[color] + (value * 10)
+            for color, value in colors.items():
+                brightness[color] += value
 
-                #Keep min as 0% and max as 100% (1000 = 100%)
-                if temp < 0:
-                    temp = 0
-                elif temp > 1000:
-                    temp = 1000
-
-                brightness[color] = temp
-
-            return self._set_brightness(brightness)
+            return self.set_color_brightness(brightness)
 
         except Exception as ex:
             print("Error processing update_color_brightness response: ", traceback.format_exc())

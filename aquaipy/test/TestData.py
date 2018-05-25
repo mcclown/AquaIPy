@@ -54,6 +54,18 @@ class TestData:
     }
 
     @staticmethod
+    def get_colors():
+        return {
+        "deep_red",
+        "uv",
+        "violet",
+        "cool_white",
+        "green",
+        "blue",
+        "royal"
+    }
+
+    @staticmethod
     def colors_1():
         return {
         "deep_red": 0,
@@ -133,11 +145,11 @@ class TestData:
         return {
         "deep_red": 0,
         "uv": 420,
-        "violet": 1000,
+        "violet": 1273,
         "cool_white": 0,
         "green": 0,
         "blue": 0,
-        "royal": 1000,
+        "royal": 1429
     }
 
 
