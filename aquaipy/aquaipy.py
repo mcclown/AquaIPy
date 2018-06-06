@@ -316,10 +316,6 @@ class AquaIPy:
             
             response, mW_norm, mW_hd, total_mW_limit = self._get_mW_limits()
             
-            #                           10 * HD_Percentage * Normal_Max_mW 
-            #  Brightness_Value =   ------------------------------------------   + 1000  
-            #                               HD_Max_mW - Normal_Max_mW
-           
             specified_mW = 0
 
             for color, value in colors.items():
@@ -330,12 +326,27 @@ class AquaIPy:
                     colors[color] = value * 10
 
                 else:
-                    top = 10 * (value - 100) * mW_norm[color]
-                    bottom = mW_hd[color] - mW_norm[color]
+ 
+                    #                           HD_Percentage       
+                    #  HD_Brightness_Value =    --------------  * 1000
+                    #                           Max_HD_Percent
+                    
+                    #top = 10 * (value - 100) * mW_norm[color]
+                    #bottom = mW_hd[color] - mW_norm[color]
+
+                    hd_percentage = value - 100
+                    max_hd_percentage = ((mW_hd[color] - mW_norm[color]) / mW_norm[color]) * 100
+                    
+                    
+                    print("mw_norm:" + str(mW_norm[color]))
+                    print("mw_hd:" + str(mW_hd[color]))
+                    print("hd_perc: " + str(hd_percentage))
+                    print("max_hd: " + str(max_hd_percentage))
+
+                    hd_brightness_value = (hd_percentage / max_hd_percentage) * 1000
 
                     #Floor calculation, to force round down.
-                    result_value = int((top/bottom) + 1000)
-                    colors[color] = result_value
+                    colors[color] = int(hd_brightness_value + 1000)
 
                 specified_mW += mW_norm[color] * (value / 100)
 

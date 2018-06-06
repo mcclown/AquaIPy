@@ -185,10 +185,10 @@ class TestData:
         "deep_red": 1000,
         "uv": 1000,
         "violet": 1000,
-        "cool_white": 763,
+        "cool_white": 760,
         "green": 1000,
-        "blue": 1724,
-        "royal": 1787
+        "blue": 1727,
+        "royal": 1771
     }
 
 
