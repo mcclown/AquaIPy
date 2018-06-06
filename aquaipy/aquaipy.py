@@ -337,12 +337,6 @@ class AquaIPy:
                     hd_percentage = value - 100
                     max_hd_percentage = ((mW_hd[color] - mW_norm[color]) / mW_norm[color]) * 100
                     
-                    
-                    print("mw_norm:" + str(mW_norm[color]))
-                    print("mw_hd:" + str(mW_hd[color]))
-                    print("hd_perc: " + str(hd_percentage))
-                    print("max_hd: " + str(max_hd_percentage))
-
                     hd_brightness_value = (hd_percentage / max_hd_percentage) * 1000
 
                     #Floor calculation, to force round down.
