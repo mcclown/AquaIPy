@@ -20,6 +20,7 @@ class TestData:
         "response_code": 0
     }
 
+    @staticmethod
     def identity_2(): 
         
         return {
@@ -139,6 +140,32 @@ class TestData:
         "blue": 0,
         "royal": 117,
     }
+    
+    @staticmethod
+    def set_colors_max_hd(): 
+        return {
+        "deep_red": 100,
+        "uv": 100,
+        "violet": 100,
+        "cool_white": 76,
+        "green": 100,
+        "blue": 108,
+        "royal": 117
+    }
+
+    @staticmethod
+    def set_colors_hd_exceeded(): 
+        return {
+        "deep_red": 0,
+        "uv": 100,
+        "violet": 100,
+        "cool_white": 113,
+        "green": 100,
+        "blue": 100,
+        "royal": 108,
+    }
+
+
 
     @staticmethod
     def set_result_colors_3(): 
@@ -150,6 +177,18 @@ class TestData:
         "green": 0,
         "blue": 0,
         "royal": 1429
+    }
+
+    @staticmethod
+    def set_result_colors_max_hd(): 
+        return {
+        "deep_red": 1000,
+        "uv": 1000,
+        "violet": 1000,
+        "cool_white": 763,
+        "green": 1000,
+        "blue": 1724,
+        "royal": 1787
     }
 
 
@@ -218,7 +257,40 @@ class TestData:
         ],
         "response_code": 0
     }
-    
+
+
+    @staticmethod
+    def power_primehd():
+        return {
+        "devices": [
+            {
+                "serial_number": "D89760043242",
+                "type": "Prime HD",
+                "max_power": 48000,
+                "hd": {
+                    "royal": 16400,
+                    "cool_white": 15400,
+                    "green": 4100,
+                    "violet": 4000,
+                    "uv": 4630,
+                    "blue": 9670,
+                    "deep_red": 3380
+                },
+                "normal": {
+                    "royal": 13440,
+                    "cool_white": 12756,
+                    "green": 3132,
+                    "violet": 3458,
+                    "uv": 3876,
+                    "blue": 8712,
+                    "deep_red": 2626
+                }
+            }
+        ],
+        "response_code": 0
+    }
+
+
     @staticmethod
     def power_hydra26hd_hd():
         return {
@@ -230,6 +302,20 @@ class TestData:
             "royal": 33350,
             "uv": 8577
         }
+
+
+    @staticmethod
+    def power_primehd_hd():
+        return {
+                    "royal": 16400,
+                    "cool_white": 15400,
+                    "green": 4100,
+                    "violet": 4000,
+                    "uv": 4630,
+                    "blue": 9670,
+                    "deep_red": 3380
+                }
+
 
     @staticmethod
     def power_hydra26hd_norm():
@@ -243,6 +329,28 @@ class TestData:
             "uv": 7270
         }
 
+
+    @staticmethod
+    def power_primehd_norm():
+        return {
+                    "royal": 13440,
+                    "cool_white": 12756,
+                    "green": 3132,
+                    "violet": 3458,
+                    "uv": 3876,
+                    "blue": 8712,
+                    "deep_red": 2626
+                }
+
+    
     @staticmethod
     def power_hydra26hd_max():
         return 90000
+
+    
+    @staticmethod
+    def power_primehd_max():
+        return 48000
+
+
+

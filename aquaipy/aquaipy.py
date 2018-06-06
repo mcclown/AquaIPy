@@ -23,7 +23,7 @@ import traceback
 from distutils.version import StrictVersion
 
 MIN_SUPPORTED_AI_FIRMWARE_VERSION = "2.0.0"
-MAX_SUPPORTED_AI_FIRMWARE_VERSION = "2.0.0"
+MAX_SUPPORTED_AI_FIRMWARE_VERSION = "2.2.0"
 
 class Response(Enum):
 
@@ -31,7 +31,7 @@ class Response(Enum):
     Error = 1
     NoSuchColour = 2
     InvalidBrightnessValue = 3
-    PowerLimitsExceeded = 4
+    PowerLimitExceeded = 4
     AllColorsMustBeSpecifed = 5
     InvalidData = 6
 
@@ -277,6 +277,10 @@ class AquaIPy:
                 else:
                     #Should never hit this case for a non-HD AI device. #ToTest
 
+                    #                       Brightness Value - 1000         HD_Max_mW - Normal_Max_mW  
+                    #   HD_Percentage =     -----------------------     *   -------------------------   *   100
+                    #                               1000                            Normal_Max_mW
+
                     #Only retrieve this info once, if it's required.
                     if resp_l == None:
                         resp_l, mW_norm, mW_hd, total_max_mW = self._get_mW_limits()
@@ -284,14 +288,14 @@ class AquaIPy:
                         if resp_l != Response.Success:
                             return resp_l, None
 
-                    #Calculate max percentage, when using HD
-                    max_percentage = (mW_hd[color] / mW_norm[color]) * 100
+                    #Calculate max HD percentage available
+                    max_hd_percentage = (mW_hd[color] - mW_norm[color]) / mW_norm[color]
 
                     #Response from /color: First 1000 is for 0 -> 100%, Second 1000 is for 100% -> Max HD% 
                     hd_in_use = (value - 1000) / 1000  
 
                     #Calculate total current percentage
-                    colors[color] = round(100 + ((max_percentage - 100) * hd_in_use))
+                    colors[color] = round(100 + (max_hd_percentage * hd_in_use * 100))
 
         except Exception as ex:
             print("Error processing get_color_brightness response: ", traceback.format_exc())
@@ -313,21 +317,32 @@ class AquaIPy:
             response, mW_norm, mW_hd, total_mW_limit = self._get_mW_limits()
             
             #                           10 * HD_Percentage * Normal_Max_mW 
-            #  Brightness Value =   ------------------------------------------   + 1000  
+            #  Brightness_Value =   ------------------------------------------   + 1000  
             #                               HD_Max_mW - Normal_Max_mW
-            
+           
+            specified_mW = 0
+
             for color, value in colors.items():
 
-                if value < 0:
+                if value <= 0:
                     colors[color] = 0
-                elif 0 <= value <= 100:
+                elif 0 < value <= 100:
                     colors[color] = value * 10
+
                 else:
                     top = 10 * (value - 100) * mW_norm[color]
                     bottom = mW_hd[color] - mW_norm[color]
 
-                    colors[color] = int((top/bottom) + 1000)
-             
+                    #Floor calculation, to force round down.
+                    result_value = int((top/bottom) + 1000)
+                    colors[color] = result_value
+
+                specified_mW += mW_norm[color] * (value / 100)
+
+            if specified_mW > total_mW_limit:
+                print("mWatts exceeded - Max:" + str(total_mW_limit) + " Specified:" + str(specified_mW))
+                return Response.PowerLimitExceeded
+
             return self._set_brightness(colors)
 
         except Exception as ex:

@@ -443,6 +443,50 @@ def test_AquaIPy_set_color_brightness_hd():
                 mock_set.assert_called_once_with(TestData.set_result_colors_3())
 
 
+@pytest.mark.parametrize("power_norm, power_hd, power_max", [
+    (TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()),
+    (TestData.power_primehd_norm(), TestData.power_primehd_hd(), TestData.power_primehd_max())
+    ])
+def test_AquaIPy_set_color_brightness_max_hd(power_norm, power_hd, power_max):
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, 'get_colors') as mock_get_colors:
+        with patch.object(api, '_get_mW_limits') as mock_get_limits:
+            with patch.object(api, '_set_brightness') as mock_set:
+
+                mock_get_colors.return_value = TestData.get_colors()
+                mock_get_limits.return_value = Response.Success, power_norm, power_hd, power_max                
+                mock_set.return_value = Response.Success
+
+                response = api.set_color_brightness(TestData.set_colors_max_hd())
+
+                assert response == Response.Success
+                mock_set.assert_called_once_with(TestData.set_result_colors_max_hd())
+
+
+@pytest.mark.parametrize("power_norm, power_hd, power_max", [
+    (TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()),
+    (TestData.power_primehd_norm(), TestData.power_primehd_hd(), TestData.power_primehd_max())
+    ])
+def test_AquaIPy_set_color_brightness_hd_exceeded(power_norm, power_hd, power_max):
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, 'get_colors') as mock_get_colors:
+        with patch.object(api, '_get_mW_limits') as mock_get_limits:
+            with patch.object(api, '_set_brightness') as mock_set:
+
+                mock_get_colors.return_value = TestData.get_colors()
+                mock_get_limits.return_value = Response.Success, power_norm, power_hd, power_max
+                mock_set.return_value = Response.Success
+
+                result = api.set_color_brightness(TestData.set_colors_hd_exceeded())
+
+                assert result == Response.PowerLimitExceeded
+                mock_set.assert_not_called()
+
+
 
 class TestHelper:
 
