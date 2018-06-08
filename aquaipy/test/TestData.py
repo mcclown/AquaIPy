@@ -287,7 +287,7 @@ class TestData:
         return {
         "devices": [
             {
-                "serial_number": "D89760043242",
+                "serial_number": "D89760043CCCC",
                 "type": "Prime HD",
                 "max_power": 48000,
                 "hd": {

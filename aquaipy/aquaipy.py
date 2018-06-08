@@ -45,7 +45,19 @@ class AquaIPy:
         self._name = name
         self._product_type = None
         self._firmware_version = None
+    
+    
+    def connect(self, host):
+
+        self._host = host
+        self._base_path = 'http://' + host + '/api'
+
+        self._setup_device_details()
         
+        if not self.supported_firmware:
+            raise NotImplementedError("Support is not available for this version of the AquaIllumination firmware yet.")
+     
+
     @property
     def mac_addr(self):
         return self._mac_addr
@@ -69,6 +81,7 @@ class AquaIPy:
     @property
     def firmware_version(self):
         return self._firmware_version
+   
 
     ##################
     # Internal Methods
@@ -122,7 +135,6 @@ class AquaIPy:
         if r_data["response_code"] == 0:
             return Response.Success
         else:
-            print(r_data)
             return Response.Error
 
             
@@ -165,17 +177,7 @@ class AquaIPy:
         return Response.Success, mW_norm, mW_hd, total_max_mW
 
 
-    def connect(self, host):
-
-        self._host = host
-        self._base_path = 'http://' + host + '/api'
-
-        self._setup_device_details()
-        
-        if not self.supported_firmware:
-            raise NotImplementedError("Support is not available for this version of the AquaIllumination firmware yet.")
-
-        
+            
     #######################################################
     # Get/Set Manual Control (ie. Not using light schedule)
     #######################################################
@@ -191,8 +193,8 @@ class AquaIPy:
         try:
             r_data = r.json()
             
-            if r_data['response_code'] != 0:
-                return Response.Error, r_data
+            if r_data["response_code"] != 0:
+                return None
                 
         except Exception as ex:
             return None
@@ -235,22 +237,17 @@ class AquaIPy:
         
         colors = []
 
-        try:
-        
-            resp, data = self._get_brightness()
+        resp, data = self._get_brightness()
             
-            if resp != Response.Success:
-                return resp, None
+        if resp != Response.Success:
+            return resp, None
 
-            for color in data:
-                colors.append(color)
+        for color in data:
+            colors.append(color)
 
-        except Exception as ex:
-            print("Error processing get_colors response: ", ex)
-            return Response.Error, None
-        
         return Response.Success, colors
-    
+   
+
     def get_color_brightness(self):
         """get_color_brighness
         Get the current brightness of all color channels.
@@ -258,49 +255,44 @@ class AquaIPy:
         
         colors = {}
 
-        try:
-            
-            #Get current brightness, for each colour channel
-            resp_b, brightness = self._get_brightness()
-
-            if resp_b != Response.Success:
-                return resp_b, None
-            
-            #Get the power limits that represent 100%
-            resp_l = mW_norm = mW_hd = total_max_mW = None
-     
-            for color, value in brightness.items():
-                #Calculate the %power
-                
-                if value <= 1000:
-                    colors[color] = value/10
-                else:
-                    #Should never hit this case for a non-HD AI device. #ToTest
-
-                    #                       Brightness Value - 1000         HD_Max_mW - Normal_Max_mW  
-                    #   HD_Percentage =     -----------------------     *   -------------------------   *   100
-                    #                               1000                            Normal_Max_mW
-
-                    #Only retrieve this info once, if it's required.
-                    if resp_l == None:
-                        resp_l, mW_norm, mW_hd, total_max_mW = self._get_mW_limits()
-
-                        if resp_l != Response.Success:
-                            return resp_l, None
-
-                    #Calculate max HD percentage available
-                    max_hd_percentage = (mW_hd[color] - mW_norm[color]) / mW_norm[color]
-
-                    #Response from /color: First 1000 is for 0 -> 100%, Second 1000 is for 100% -> Max HD% 
-                    hd_in_use = (value - 1000) / 1000  
-
-                    #Calculate total current percentage
-                    colors[color] = 100 + (max_hd_percentage * hd_in_use * 100)
-
-        except Exception as ex:
-            print("Error processing get_color_brightness response: ", traceback.format_exc())
-            return Response.Error, None
         
+        #Get current brightness, for each colour channel
+        resp_b, brightness = self._get_brightness()
+
+        if resp_b != Response.Success:
+            return resp_b, None
+        
+        #Get the power limits that represent 100%
+        resp_l = mW_norm = mW_hd = total_max_mW = None
+ 
+        for color, value in brightness.items():
+            #Calculate the %power
+            
+            if value <= 1000:
+                colors[color] = value/10
+            else:
+                #Should never hit this case for a non-HD AI device. #ToTest
+
+                #                       Brightness Value - 1000         HD_Max_mW - Normal_Max_mW  
+                #   HD_Percentage =     -----------------------     *   -------------------------   *   100
+                #                               1000                            Normal_Max_mW
+
+                #Only retrieve this info once, if it's required.
+                if resp_l == None:
+                    resp_l, mW_norm, mW_hd, total_max_mW = self._get_mW_limits()
+
+                    if resp_l != Response.Success:
+                        return resp_l, None
+
+                #Calculate max HD percentage available
+                max_hd_percentage = (mW_hd[color] - mW_norm[color]) / mW_norm[color]
+
+                #Response from /color: First 1000 is for 0 -> 100%, Second 1000 is for 100% -> Max HD% 
+                hd_in_use = (value - 1000) / 1000  
+
+                #Calculate total current percentage
+                colors[color] = 100 + (max_hd_percentage * hd_in_use * 100)
+
         return Response.Success, colors
 
     def set_color_brightness(self, colors):
@@ -312,50 +304,45 @@ class AquaIPy:
         if len(colors) == 0 or len(colors) < len(self.get_colors()):
             return Response.InvalidData
 
-        try:
             
-            response, mW_norm, mW_hd, total_mW_limit = self._get_mW_limits()
-            
-            specified_mW = 0
+        response, mW_norm, mW_hd, total_mW_limit = self._get_mW_limits()
 
-            for color, value in colors.items():
-
-                if value <= 0:
-                    colors[color] = 0
-                elif 0 < value <= 100:
-                    colors[color] = round(value * 10)
-
-                else:
- 
-                    #                           HD_Percentage       
-                    #  HD_Brightness_Value =    --------------  * 1000
-                    #                           Max_HD_Percent
-                    
-                    #top = 10 * (value - 100) * mW_norm[color]
-                    #bottom = mW_hd[color] - mW_norm[color]
-
-                    hd_percentage = value - 100
-                    max_hd_percentage = ((mW_hd[color] - mW_norm[color]) / mW_norm[color]) * 100
-                    
-                    hd_brightness_value = (hd_percentage / max_hd_percentage) * 1000
-
-                    colors[color] = round(hd_brightness_value + 1000)
-
-                specified_mW += mW_norm[color] * (value / 100)
-
-            print(colors)
-
-            if specified_mW > total_mW_limit:
-                print("mWatts exceeded - Max:" + str(total_mW_limit) + " Specified:" + str(specified_mW))
-                return Response.PowerLimitExceeded
-
-            return self._set_brightness(colors)
-
-        except Exception as ex:
-            print("Error processing set_color_brightness", traceback.format_exc())
-            return Response.Error
-
+        if response != Response.Success:
+            return response
         
+        specified_mW = 0
+
+        for color, value in colors.items():
+
+            if value <= 0:
+                colors[color] = 0
+            elif 0 < value <= 100:
+                colors[color] = round(value * 10)
+
+            else:
+
+                #                           HD_Percentage       
+                #  HD_Brightness_Value =    --------------  * 1000
+                #                           Max_HD_Percent
+                
+                #top = 10 * (value - 100) * mW_norm[color]
+                #bottom = mW_hd[color] - mW_norm[color]
+
+                hd_percentage = value - 100
+                max_hd_percentage = ((mW_hd[color] - mW_norm[color]) / mW_norm[color]) * 100
+                
+                hd_brightness_value = (hd_percentage / max_hd_percentage) * 1000
+
+                colors[color] = round(hd_brightness_value + 1000)
+
+            specified_mW += mW_norm[color] * (value / 100)
+
+        if specified_mW > total_mW_limit:
+            print("mWatts exceeded - Max:" + str(total_mW_limit) + " Specified:" + str(specified_mW))
+            return Response.PowerLimitExceeded
+
+        return self._set_brightness(colors)
+    
     def patch_color_brightness(self, colors):
         """patch_color_brightness
         Update to the specified color percentage brightness.
@@ -364,18 +351,13 @@ class AquaIPy:
         if len(colors) < 1:
             return Response.InvalidData
 
-        try:
-            response, brightness = self.get_color_brightness()
+        response, brightness = self.get_color_brightness()
 
-            for color, value in colors.items():
-                brightness[color] = value
+        for color, value in colors.items():
+            brightness[color] = value
 
-            return self.set_color_brightness(brightness)
+        return self.set_color_brightness(brightness)
 
-        except Exception as ex:
-            print("Error processing patch_color_brightness response: ", traceback.format_exc())
-            return Response.Error
-     
     
     def update_color_brightness(self, colors):
         """update_color_brightness
@@ -385,16 +367,12 @@ class AquaIPy:
         if len(colors) < 1:
             return Response.InvalidData
 
-        try:
-            response, brightness = self.get_color_brightness()
-            
-            for color, value in colors.items():
-                brightness[color] += value
+        response, brightness = self.get_color_brightness()
+        
+        for color, value in colors.items():
+            brightness[color] += value
 
-            return self.set_color_brightness(brightness)
+        return self.set_color_brightness(brightness)
 
-        except Exception as ex:
-            print("Error processing update_color_brightness response: ", traceback.format_exc())
-            return Response.Error
     
 

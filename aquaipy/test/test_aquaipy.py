@@ -13,12 +13,21 @@ def test_AquaIPy_init_raises_InvalidURL():
         api.connect("")
 
 
-def test_AquaIPy_init_raises_ConnectionError():
+def test_AquaIPy_init_raises_requests_ConnectionError_bad_hostname():
     
     with pytest.raises(requests.exceptions.ConnectionError):
         api = AquaIPy()
         api.connect("mcclown.org")
 
+
+@patch("aquaipy.aquaipy.requests.get")
+def test_AquaIPy_init_raises_ConnectionError_server_error(mock_get):
+    
+    mock_get.return_value.json.return_value = TestData.server_error()
+
+    with pytest.raises(ConnectionError):
+        api = AquaIPy()
+        api.connect("mcclown.org")
 
 def test_AquaIPy_init_with_name():
 
@@ -36,7 +45,6 @@ def test_AquaIPy_init_success():
     assert api.name == None
     assert api.firmware_version == "2.0.0"
     assert api.base_path == 'http://' + TestHelper.mock_hostname + '/api'
-
 
 @patch('aquaipy.aquaipy.requests.get')
 def test_AquaIPy_firmware_error(mock_get):
@@ -72,7 +80,16 @@ def test_AquaIPy_get_schedule_state_error():
     api = TestHelper.get_connected_instance()
 
     with patch('aquaipy.aquaipy.requests.get') as mock_get:
-        mock_get.return_value.json.return_value = TestData.server_error
+        mock_get.return_value.json.return_value = TestData.server_error()
+
+        assert api.get_schedule_state() == None
+
+def test_AquaIPy_get_schedule_state_error_unexpected_response():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch('aquaipy.aquaipy.requests.get') as mock_get:
+        mock_get.return_value.json.return_value = None
 
         assert api.get_schedule_state() == None
 
@@ -147,6 +164,36 @@ def test_AquaIPy_get_raw_mW_data_hydra26hd():
         assert mW_hd["royal"] == 33350
         assert mW_hd["uv"] == 8577
 
+
+def test_AquaIPy_get_raw_mW_data_primehd():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch('aquaipy.aquaipy.requests.get') as mock_get:
+        mock_get.return_value.json.return_value = TestData.power_primehd()
+
+        response, mW_norm, mW_hd, total_max_mW = api._get_mW_limits()
+
+        assert response == Response.Success
+        assert total_max_mW == 48000
+        
+        assert mW_norm["blue"] == 8712
+        assert mW_norm["cool_white"] == 12756
+        assert mW_norm["violet"] == 3458
+        assert mW_norm["green"] == 3132
+        assert mW_norm["deep_red"] == 2626
+        assert mW_norm["royal"] == 13440
+        assert mW_norm["uv"] == 3876
+
+        assert mW_hd["blue"] == 9670
+        assert mW_hd["cool_white"] == 15400
+        assert mW_hd["violet"] == 4000
+        assert mW_hd["green"] == 4100
+        assert mW_hd["deep_red"] == 3380
+        assert mW_hd["royal"] == 16400
+        assert mW_hd["uv"] == 4630
+
+
 def test_AquaIPy_get_raw_mW_data_error():
 
     api = TestHelper.get_connected_instance()
@@ -186,6 +233,42 @@ def test_AquaIPy_get_colors_error():
         response = api.get_colors()
 
         assert response == (Response.Error, None)
+
+
+def test_AquaIPy_get_color_brightness_error():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, '_get_brightness') as mock_getb:
+
+        data = TestData.colors_1()
+        del data['response_code']
+        mock_getb.return_value = Response.Error, None
+
+
+        response, colors = api.get_color_brightness()
+        assert response == Response.Error
+        assert colors == None
+
+
+def test_AquaIPy_get_color_brightness_error_get_power():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, '_get_brightness') as mock_getb:
+        with patch.object(api, '_get_mW_limits') as mock_getl:
+
+            #Must contain HD color values, to validate this case
+            data = TestData.colors_3()
+            del data['response_code']
+            mock_getb.return_value = Response.Success, data
+
+            mock_getl.return_value = Response.Error, None, None, None
+
+            response, colors = api.get_color_brightness()
+            assert response == Response.Error
+            assert colors == None
+
 
 def test_AquaIPy_get_color_brightness_all_0():
 
@@ -279,6 +362,22 @@ def test_AquaIPy_set_brightness():
         mock_post.assert_called_once_with(api.base_path + '/colors', json = data)
 
 
+def test_AquaIPy_set_brightness_error():
+    
+    api = TestHelper.get_connected_instance()
+
+    with patch('aquaipy.aquaipy.requests.post')  as mock_post:
+        
+        mock_post.return_value.json.return_value = TestData.server_error()
+
+        data = TestData.colors_1()
+        del data['response_code']
+
+        response = api._set_brightness(data)
+
+        assert response == Response.Error
+
+
 def test_AquaIPy_set_schedule_enabled():
 
     api = TestHelper.get_connected_instance()
@@ -305,6 +404,32 @@ def test_AquaIPy_set_schedule_disabled():
 
         assert response == Response.Success
         mock_put.assert_called_once_with(api.base_path + '/schedule/enable', data='{"enable": false}')
+
+
+def test_AquaIPy_set_schedule_error():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch('aquaipy.aquaipy.requests.put') as mock_put:
+
+        mock_put.return_value.json.return_value = TestData.server_error()
+
+        response = api.set_schedule_state(False)
+
+        assert response == Response.Error
+
+
+def test_AquaIPy_set_schedule_error_unexpected_response():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch('aquaipy.aquaipy.requests.put') as mock_put:
+
+        mock_put.return_value.json.return_value = None
+
+        response = api.set_schedule_state(False)
+
+        assert response == Response.Error
 
 
 def test_AquaIPy_patch_color_brightness_all_0():
@@ -362,6 +487,16 @@ def test_AquaIPy_patch_color_brightness_hd_values():
 
             assert response == Response.Success
             mock_set.assert_called_once_with(result)
+
+def test_AquaIPy_patch_color_brightness_invalid_data():
+
+    api = TestHelper.get_connected_instance()
+
+    data = TestData.colors_1()
+    del data['response_code']
+
+    response = api.patch_color_brightness({})
+    assert response == Response.InvalidData
 
 
 def test_AquaIPy_update_color_brightness():
@@ -425,6 +560,48 @@ def test_AquaIPy_update_color_brightness_too_low():
 
             assert response == Response.Success
             mock_set.assert_called_once_with(result)
+
+def test_AquaIPy_update_color_brightness_invalid_data():
+
+    api = TestHelper.get_connected_instance()
+
+    data = TestData.colors_1()
+    del data['response_code']
+
+    response = api.update_color_brightness({})
+    assert response == Response.InvalidData
+
+
+def test_AquaIPy_set_color_brightness_error():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, 'get_colors') as mock_get_colors:
+        with patch.object(api, '_get_mW_limits') as mock_get_limits:
+            with patch.object(api, '_set_brightness') as mock_set:
+
+                mock_get_colors.return_value = TestData.get_colors()
+                mock_get_limits.return_value = Response.Success, TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()
+                mock_set.return_value = Response.Success
+
+                response = api.set_color_brightness({})
+                assert response == Response.InvalidData
+
+def test_AquaIPy_set_color_brightness_error_get_power():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, 'get_colors') as mock_get_colors:
+        with patch.object(api, '_get_mW_limits') as mock_get_limits:
+            with patch.object(api, '_set_brightness') as mock_set:
+
+                mock_get_colors.return_value = TestData.get_colors()
+                mock_get_limits.return_value = Response.Error, None, None, None
+
+                response = api.set_color_brightness(TestData.set_colors_1())
+                assert response == Response.Error
+
+
 
 def test_AquaIPy_set_color_brightness_hd():
 
