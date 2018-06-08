@@ -443,11 +443,11 @@ def test_AquaIPy_set_color_brightness_hd():
                 mock_set.assert_called_once_with(TestData.set_result_colors_3())
 
 
-@pytest.mark.parametrize("power_norm, power_hd, power_max", [
-    (TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()),
-    (TestData.power_primehd_norm(), TestData.power_primehd_hd(), TestData.power_primehd_max())
+@pytest.mark.parametrize("power_norm, power_hd, power_max, set_colors_max_hd, result_colors_max_hd", [
+    (TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max(), TestData.set_colors_max_hd_hydra26HD(), TestData.set_result_colors_max_hd_hydra26HD()),
+    (TestData.power_primehd_norm(), TestData.power_primehd_hd(), TestData.power_primehd_max(), TestData.set_colors_max_hd_primeHD(), TestData.set_result_colors_max_hd_primeHD())
     ])
-def test_AquaIPy_set_color_brightness_max_hd(power_norm, power_hd, power_max):
+def test_AquaIPy_set_color_brightness_max_hd(power_norm, power_hd, power_max, set_colors_max_hd, result_colors_max_hd):
 
     api = TestHelper.get_connected_instance()
 
@@ -459,10 +459,10 @@ def test_AquaIPy_set_color_brightness_max_hd(power_norm, power_hd, power_max):
                 mock_get_limits.return_value = Response.Success, power_norm, power_hd, power_max                
                 mock_set.return_value = Response.Success
 
-                response = api.set_color_brightness(TestData.set_colors_max_hd())
+                response = api.set_color_brightness(set_colors_max_hd)
 
                 assert response == Response.Success
-                mock_set.assert_called_once_with(TestData.set_result_colors_max_hd())
+                mock_set.assert_called_once_with(result_colors_max_hd)
 
 
 @pytest.mark.parametrize("power_norm, power_hd, power_max", [
