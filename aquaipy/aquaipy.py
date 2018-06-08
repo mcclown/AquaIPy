@@ -273,7 +273,7 @@ class AquaIPy:
                 #Calculate the %power
                 
                 if value <= 1000:
-                    colors[color] = round(value/10)
+                    colors[color] = value/10
                 else:
                     #Should never hit this case for a non-HD AI device. #ToTest
 
@@ -295,7 +295,7 @@ class AquaIPy:
                     hd_in_use = (value - 1000) / 1000  
 
                     #Calculate total current percentage
-                    colors[color] = round(100 + (max_hd_percentage * hd_in_use * 100))
+                    colors[color] = 100 + (max_hd_percentage * hd_in_use * 100)
 
         except Exception as ex:
             print("Error processing get_color_brightness response: ", traceback.format_exc())
@@ -323,7 +323,7 @@ class AquaIPy:
                 if value <= 0:
                     colors[color] = 0
                 elif 0 < value <= 100:
-                    colors[color] = value * 10
+                    colors[color] = round(value * 10)
 
                 else:
  
@@ -339,10 +339,11 @@ class AquaIPy:
                     
                     hd_brightness_value = (hd_percentage / max_hd_percentage) * 1000
 
-                    #Floor calculation, to force round down.
-                    colors[color] = int(hd_brightness_value + 1000)
+                    colors[color] = round(hd_brightness_value + 1000)
 
                 specified_mW += mW_norm[color] * (value / 100)
+
+            print(colors)
 
             if specified_mW > total_mW_limit:
                 print("mWatts exceeded - Max:" + str(total_mW_limit) + " Specified:" + str(specified_mW))

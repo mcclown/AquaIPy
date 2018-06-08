@@ -145,24 +145,24 @@ class TestData:
     def set_colors_max_hd_primeHD(): 
         return {
         "deep_red": 100,
-        "uv": 100,
-        "violet": 100,
+        "uv": 102.04256965944272,
+        "violet": 100.28212839791787,
         "cool_white": 76,
         "green": 100,
-        "blue": 108,
-        "royal": 117
+        "blue": 108.0932966023875111,
+        "royal": 116.8702380952381
     }
     
     @staticmethod
     def set_colors_max_hd_hydra26HD(): 
         return {
-        "deep_red": 4,
-        "uv": 116,
-        "violet": 116,
-        "cool_white": 137,
-        "green": 5,
-        "blue": 79,
-        "royal": 103
+        "deep_red": 2.6,
+        "uv": 104.54843191196699,
+        "violet": 104.84221675550089,
+        "cool_white": 114.42251610715496,
+        "green": 3.4,
+        "blue": 104.73310638297872,
+        "royal": 111.209586403215
     }
     
     @staticmethod
@@ -184,7 +184,7 @@ class TestData:
         return {
         "deep_red": 0,
         "uv": 420,
-        "violet": 1273,
+        "violet": 1274,
         "cool_white": 0,
         "green": 0,
         "blue": 0,
@@ -195,24 +195,24 @@ class TestData:
     def set_result_colors_max_hd_primeHD(): 
         return {
         "deep_red": 1000,
-        "uv": 1000,
-        "violet": 1000,
+        "uv": 1105,
+        "violet": 1018,
         "cool_white": 760,
         "green": 1000,
-        "blue": 1727,
-        "royal": 1771
+        "blue": 1736,
+        "royal": 1766
     }
 
     @staticmethod
     def set_result_colors_max_hd_hydra26HD(): 
         return {
-        "deep_red": 40,
-        "uv": 1889,
-        "violet": 1875,
-        "cool_white": 760,
-        "green": 1000,
-        "blue": 1727,
-        "royal": 1771
+        "deep_red": 26,
+        "uv": 1253,
+        "violet": 1265,
+        "cool_white": 1392,
+        "green": 34,
+        "blue": 1299,
+        "royal": 1283
     }
     
     @staticmethod

@@ -253,11 +253,11 @@ def test_AquaIPy_get_color_brightness_hd_values():
             for color, value in colors.items():
 
                 if color == 'uv':
-                    assert value == 42
+                    assert value == 42.4
                 elif color == 'violet':
-                    assert value == 105
+                    assert value == 104.78739920732541
                 elif color == 'royal':
-                    assert value == 117
+                    assert value == 117.23028298727394
                 else:
                     assert value == 0
 
@@ -461,9 +461,8 @@ def test_AquaIPy_set_color_brightness_max_hd(power_norm, power_hd, power_max, se
 
                 response = api.set_color_brightness(set_colors_max_hd)
 
-                assert response == Response.Success
                 mock_set.assert_called_once_with(result_colors_max_hd)
-
+                assert response == Response.Success
 
 @pytest.mark.parametrize("power_norm, power_hd, power_max", [
     (TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()),
@@ -483,9 +482,8 @@ def test_AquaIPy_set_color_brightness_hd_exceeded(power_norm, power_hd, power_ma
 
                 result = api.set_color_brightness(TestData.set_colors_hd_exceeded())
 
-                assert result == Response.PowerLimitExceeded
                 mock_set.assert_not_called()
-
+                assert result == Response.PowerLimitExceeded
 
 
 class TestHelper:
