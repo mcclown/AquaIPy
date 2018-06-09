@@ -49,7 +49,7 @@ setup(
     packages=['aquaipy'],
     include_package_data=True,
     platforms='any',
-    test_suite='aquaipy.test.test_aquipy',
+    test_suite='aquaipy.test.test_aquaipy',
     classifiers = [
         'Programming Language :: Python',
         'Development Status :: 4 - Beta',
