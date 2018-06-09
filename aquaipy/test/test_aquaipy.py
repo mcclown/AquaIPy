@@ -218,8 +218,7 @@ def test_AquaIPy_get_colors():
 
         mock_get.return_value =  Response.Success, data
 
-        response, colors = api.get_colors()
-        assert response == Response.Success
+        colors = api.get_colors()
         assert len(colors) == 7
 
 def test_AquaIPy_get_colors_error():
@@ -229,10 +228,9 @@ def test_AquaIPy_get_colors_error():
     with patch.object(api, '_get_brightness') as mock_get:
 
         mock_get.return_value = (Response.Error, None)
-
         response = api.get_colors()
 
-        assert response == (Response.Error, None)
+        assert response == None
 
 
 def test_AquaIPy_get_color_brightness_error():
@@ -246,8 +244,7 @@ def test_AquaIPy_get_color_brightness_error():
         mock_getb.return_value = Response.Error, None
 
 
-        response, colors = api.get_color_brightness()
-        assert response == Response.Error
+        colors = api.get_colors_brightness()
         assert colors == None
 
 
@@ -262,11 +259,9 @@ def test_AquaIPy_get_color_brightness_error_get_power():
             data = TestData.colors_3()
             del data['response_code']
             mock_getb.return_value = Response.Success, data
-
             mock_getl.return_value = Response.Error, None, None, None
 
-            response, colors = api.get_color_brightness()
-            assert response == Response.Error
+            colors = api.get_colors_brightness()
             assert colors == None
 
 
@@ -283,8 +278,7 @@ def test_AquaIPy_get_color_brightness_all_0():
 
             mock_getl.return_value = Response.Success, TestData.power_hydra26hd_norm, TestData.power_hydra26hd_hd, TestData.power_hydra26hd_max
 
-            response, colors = api.get_color_brightness()
-            assert response == Response.Success
+            colors = api.get_colors_brightness()
             mock_getb.assert_called_once_with()
             mock_getl.assert_not_called()
             assert len(colors) == 7
@@ -305,8 +299,7 @@ def test_AquaIPy_get_color_brightness_all_100():
 
             mock_getl.return_value = Response.Success, TestData.power_hydra26hd_norm, TestData.power_hydra26hd_hd, TestData.power_hydra26hd_max
 
-            response, colors = api.get_color_brightness()
-            assert response == Response.Success
+            colors = api.get_colors_brightness()
             mock_getb.assert_called_once_with()
             mock_getl.assert_not_called()
             assert len(colors) == 7
@@ -327,8 +320,7 @@ def test_AquaIPy_get_color_brightness_hd_values():
 
             mock_getl.return_value = Response.Success, TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()
 
-            response, colors = api.get_color_brightness()
-            assert response == Response.Success
+            colors = api.get_colors_brightness()
             mock_getb.assert_called_once_with()
             mock_getl.assert_called_once_with()
             assert len(colors) == 7
@@ -436,15 +428,15 @@ def test_AquaIPy_patch_color_brightness_all_0():
 
     api = TestHelper.get_connected_instance()
 
-    with patch.object(api, 'set_color_brightness') as mock_set:
-        with patch.object(api, 'get_color_brightness') as mock_get:
+    with patch.object(api, 'set_colors_brightness') as mock_set:
+        with patch.object(api, 'get_colors_brightness') as mock_get:
 
             data = TestData.colors_1()
             del data['response_code']
             mock_get.return_value = Response.Success, data
             mock_set.return_value = Response.Success
 
-            response = api.patch_color_brightness(TestData.set_colors_1())
+            response = api.patch_colors_brightness(TestData.set_colors_1())
 
             assert response == Response.Success
             mock_set.assert_called_once_with(data)
@@ -453,15 +445,15 @@ def test_AquaIPy_patch_color_brightness_all_100():
 
     api = TestHelper.get_connected_instance()
 
-    with patch.object(api, 'set_color_brightness') as mock_set:
-        with patch.object(api, 'get_color_brightness') as mock_get:
+    with patch.object(api, 'set_colors_brightness') as mock_set:
+        with patch.object(api, 'get_colors_brightness') as mock_get:
 
             data = TestData.colors_1()
             del data['response_code']
             mock_get.return_value = Response.Success, data
             mock_set.return_value = Response.Success
 
-            response = api.patch_color_brightness(TestData.set_colors_2())
+            response = api.patch_colors_brightness(TestData.set_colors_2())
 
             result = TestData.set_colors_2()
 
@@ -473,15 +465,15 @@ def test_AquaIPy_patch_color_brightness_hd_values():
 
     api = TestHelper.get_connected_instance()
 
-    with patch.object(api, 'set_color_brightness') as mock_set:
-        with patch.object(api, 'get_color_brightness') as mock_get:
+    with patch.object(api, 'set_colors_brightness') as mock_set:
+        with patch.object(api, 'get_colors_brightness') as mock_get:
 
             data = TestData.colors_1()
             del data['response_code']
             mock_get.return_value = Response.Success, data
             mock_set.return_value = Response.Success
 
-            response = api.patch_color_brightness(TestData.set_colors_3())
+            response = api.patch_colors_brightness(TestData.set_colors_3())
 
             result = TestData.set_colors_3()
 
@@ -495,7 +487,7 @@ def test_AquaIPy_patch_color_brightness_invalid_data():
     data = TestData.colors_1()
     del data['response_code']
 
-    response = api.patch_color_brightness({})
+    response = api.patch_colors_brightness({})
     assert response == Response.InvalidData
 
 
@@ -503,15 +495,15 @@ def test_AquaIPy_update_color_brightness():
 
     api = TestHelper.get_connected_instance()
 
-    with patch.object(api, 'set_color_brightness') as mock_set:
-        with patch.object(api, 'get_color_brightness') as mock_get:
+    with patch.object(api, 'set_colors_brightness') as mock_set:
+        with patch.object(api, 'get_colors_brightness') as mock_get:
 
             data = TestData.colors_1()
             del data['response_code']
             mock_get.return_value = Response.Success, data
             mock_set.return_value = Response.Success
 
-            response = api.update_color_brightness({'blue': 20})
+            response = api.update_color_brightness('blue', 20)
 
             result = TestData.set_colors_1()
             result['blue'] = 20
@@ -524,15 +516,15 @@ def test_AquaIPy_update_color_brightness_too_high():
 
     api = TestHelper.get_connected_instance()
 
-    with patch.object(api, 'set_color_brightness') as mock_set:
-        with patch.object(api, 'get_color_brightness') as mock_get:
+    with patch.object(api, 'set_colors_brightness') as mock_set:
+        with patch.object(api, 'get_colors_brightness') as mock_get:
 
             data = TestData.colors_1()
             del data['response_code']
             mock_get.return_value = Response.Success, data
             mock_set.return_value = Response.Success
 
-            response = api.update_color_brightness({'blue': 110})
+            response = api.update_color_brightness('blue', 110)
 
             result = TestData.set_colors_1()
             result['blue'] = 110
@@ -545,15 +537,15 @@ def test_AquaIPy_update_color_brightness_too_low():
 
     api = TestHelper.get_connected_instance()
 
-    with patch.object(api, 'set_color_brightness') as mock_set:
-        with patch.object(api, 'get_color_brightness') as mock_get:
+    with patch.object(api, 'set_colors_brightness') as mock_set:
+        with patch.object(api, 'get_colors_brightness') as mock_get:
 
             data = TestData.colors_1()
             del data['response_code']
             mock_get.return_value = Response.Success, data
             mock_set.return_value = Response.Success
 
-            response = api.update_color_brightness({'blue': -10})
+            response = api.update_color_brightness('blue', -10)
 
             result = TestData.set_colors_1()
             result['blue'] = -10
@@ -561,15 +553,21 @@ def test_AquaIPy_update_color_brightness_too_low():
             assert response == Response.Success
             mock_set.assert_called_once_with(result)
 
+
 def test_AquaIPy_update_color_brightness_invalid_data():
 
     api = TestHelper.get_connected_instance()
 
-    data = TestData.colors_1()
-    del data['response_code']
-
-    response = api.update_color_brightness({})
+    response = api.update_color_brightness("", 0.0)
     assert response == Response.InvalidData
+
+
+def test_AquaIPy_update_color_brightness_no_action_required():
+
+    api = TestHelper.get_connected_instance()
+
+    response = api.update_color_brightness("deep_red", 0.0)
+    assert response == Response.Success
 
 
 def test_AquaIPy_set_color_brightness_error():
@@ -584,8 +582,8 @@ def test_AquaIPy_set_color_brightness_error():
                 mock_get_limits.return_value = Response.Success, TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()
                 mock_set.return_value = Response.Success
 
-                response = api.set_color_brightness({})
-                assert response == Response.InvalidData
+                response = api.set_colors_brightness({})
+                assert response == Response.AllColorsMustBeSpecified
 
 def test_AquaIPy_set_color_brightness_error_get_power():
 
@@ -598,7 +596,7 @@ def test_AquaIPy_set_color_brightness_error_get_power():
                 mock_get_colors.return_value = TestData.get_colors()
                 mock_get_limits.return_value = Response.Error, None, None, None
 
-                response = api.set_color_brightness(TestData.set_colors_1())
+                response = api.set_colors_brightness(TestData.set_colors_1())
                 assert response == Response.Error
 
 
@@ -615,7 +613,7 @@ def test_AquaIPy_set_color_brightness_hd():
                 mock_get_limits.return_value = Response.Success, TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()
                 mock_set.return_value = Response.Success
 
-                api.set_color_brightness(TestData.set_colors_3())
+                api.set_colors_brightness(TestData.set_colors_3())
 
                 mock_set.assert_called_once_with(TestData.set_result_colors_3())
 
@@ -636,7 +634,7 @@ def test_AquaIPy_set_color_brightness_max_hd(power_norm, power_hd, power_max, se
                 mock_get_limits.return_value = Response.Success, power_norm, power_hd, power_max                
                 mock_set.return_value = Response.Success
 
-                response = api.set_color_brightness(set_colors_max_hd)
+                response = api.set_colors_brightness(set_colors_max_hd)
 
                 mock_set.assert_called_once_with(result_colors_max_hd)
                 assert response == Response.Success
@@ -657,7 +655,7 @@ def test_AquaIPy_set_color_brightness_hd_exceeded(power_norm, power_hd, power_ma
                 mock_get_limits.return_value = Response.Success, power_norm, power_hd, power_max
                 mock_set.return_value = Response.Success
 
-                result = api.set_color_brightness(TestData.set_colors_hd_exceeded())
+                result = api.set_colors_brightness(TestData.set_colors_hd_exceeded())
 
                 mock_set.assert_not_called()
                 assert result == Response.PowerLimitExceeded
