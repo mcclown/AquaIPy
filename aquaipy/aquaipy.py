@@ -1,20 +1,18 @@
-"""
+#
+#   Copyright 2018 Stephen Mc Gowan <mcclown@gmail.com>
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
-   Copyright 2018 Stephen Mc Gowan <mcclown@gmail.com>
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-"""
 
 from enum import Enum
 import requests
@@ -25,14 +23,18 @@ from distutils.version import StrictVersion
 MIN_SUPPORTED_AI_FIRMWARE_VERSION = "2.0.0"
 MAX_SUPPORTED_AI_FIRMWARE_VERSION = "2.2.0"
 
+
 class Response(Enum):
+    """
+    Response codes, for the AquaIPy methods
+    """
 
     Success = 0
     Error = 1
     NoSuchColour = 2
     InvalidBrightnessValue = 3
     PowerLimitExceeded = 4
-    AllColorsMustBeSpecifed = 5
+    AllColorsMustBeSpecified = 5
     InvalidData = 6
 
 
@@ -365,7 +367,7 @@ class AquaIPy:
     def set_colors_brightness(self, colors):
         """Set all colors to the specified color percentage.
             
-        ..  note:: All colors returned by *get_colors_brightness()* must be specified.
+        ..  note:: All colors returned by *get_colors()* must be specified.
 
         :param colors: dictionary of colors and percentage values
         :type colors: dict( color_1=percentage_1..color_n=percentage_n )
@@ -376,7 +378,7 @@ class AquaIPy:
         
         #Need to add better validation here
         if len(colors) == 0 or len(colors) < len(self.get_colors()):
-            return Response.InvalidData
+            return Response.AllColorsMustBeSpecified
 
             
         response, mW_norm, mW_hd, total_mW_limit = self._get_mW_limits()
@@ -460,5 +462,4 @@ class AquaIPy:
 
         return self.set_colors_brightness(brightness)
 
-    
 

@@ -1,8 +1,10 @@
-aquaipy package
-===============
+API
+===
 
-Submodules
-----------
+.. automodule:: aquaipy
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 aquaipy.aquaipy module
 ----------------------
@@ -13,10 +15,4 @@ aquaipy.aquaipy module
     :show-inheritance:
 
 
-Module contents
----------------
 
-.. automodule:: aquaipy
-    :members:
-    :undoc-members:
-    :show-inheritance:

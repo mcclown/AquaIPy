@@ -583,7 +583,7 @@ def test_AquaIPy_set_color_brightness_error():
                 mock_set.return_value = Response.Success
 
                 response = api.set_colors_brightness({})
-                assert response == Response.InvalidData
+                assert response == Response.AllColorsMustBeSpecified
 
 def test_AquaIPy_set_color_brightness_error_get_power():
 
