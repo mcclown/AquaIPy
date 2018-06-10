@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import requests
 from aquaipy import AquaIPy, Response
+from aquaipy.error import ConnError, FirmwareError, MustBeParentError
 from aquaipy.test.TestData import TestData
 
 
@@ -25,7 +26,7 @@ def test_AquaIPy_init_raises_ConnectionError_server_error(mock_get):
     
     mock_get.return_value.json.return_value = TestData.server_error()
 
-    with pytest.raises(ConnectionError):
+    with pytest.raises(ConnError):
         api = AquaIPy()
         api.connect("mcclown.org")
 
@@ -52,7 +53,7 @@ def test_AquaIPy_firmware_error(mock_get):
     mock_get.return_value.json.return_value = TestData.identity_2()
 
     api = AquaIPy()
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(FirmwareError):
         api.connect(TestHelper.mock_hostname)
 
 

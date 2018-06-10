@@ -19,6 +19,7 @@ import requests
 import json
 import traceback
 from distutils.version import StrictVersion
+from aquaipy.error import ConnError, FirmwareError, MustBeParentError
 
 MIN_SUPPORTED_AI_FIRMWARE_VERSION = "2.0.0"
 MAX_SUPPORTED_AI_FIRMWARE_VERSION = "2.2.0"
@@ -73,12 +74,9 @@ class AquaIPy:
         self._host = host
         self._base_path = 'http://' + host + '/api'
 
-        self._setup_device_details()
+        self._setup_device_details(check_firmware_support)
         
-        if check_firmware_support and not self.supported_firmware:
-            raise NotImplementedError("Support is not available for this version of the AquaIllumination firmware yet.")
-     
-
+        
     @property
     def mac_addr(self):
         """Gets connected devices Mac Address/Serial Number.
@@ -143,29 +141,44 @@ class AquaIPy:
     ##################
     # Internal Methods
     ##################
+    def _validate_connection(self):
+        """Verify connectivity, raise Error if not availale"""
     
-    def _setup_device_details(self):
+        if self._base_path == None:
+            raise ConnError("Error connecting to host", self._host)
+         
+    def _setup_device_details(self, check_firmware_support):
         """
         Verify connectivity to the device and populate device attributes
         """
-    
+
         r = requests.get(self._base_path + "/identity")
         
         r_data = None
         r_data = r.json()
         
         if r_data['response_code'] != 0:
-            raise ConnectionError("Error connecting to host [" + self._host + "]")
+            #Clear down base_path, if setup device fails
+            self._base_path = None
+            raise ConnError("Error connecting to host", self._host)
             
         self._mac_addr = r_data['serial_number']
         self._firmware_version = r_data['firmware']
         self._product_type = r_data['product']
+        
+        if check_firmware_support and not self.supported_firmware:
+            raise FirmwareError("Support is not available for this version of the AquaIllumination firmware yet.", self._firmware_version)
+
+        if r_data['parent'] != "":
+            raise MustBeParentError("Connected to non-parent device", r_data['parent'])
 
     
     def _get_brightness(self):
         """
         Get raw intensity values back from API
         """
+        
+        self._validate_connection()
         r = requests.get(self._base_path + "/colors")
         
         r_data = None
@@ -184,6 +197,7 @@ class AquaIPy:
         Set raw intensity values, via AI API
         """
         
+        self._validate_connection() 
         r = requests.post(self._base_path + "/colors", json = body)
 
         r_data = None
@@ -199,7 +213,8 @@ class AquaIPy:
         """
         Get mWatts limits in normal mode & HD mode, for each color channel. Also retrieve overall max mW available.
         """
-
+        
+        self._validate_connection()
         r = requests.get(self._base_path + "/power")
     
         r_data = None
@@ -246,7 +261,8 @@ class AquaIPy:
         :rtype: bool
 
         """
-
+        
+        self._validate_connection()
         r = requests.get(self._base_path + '/schedule/enable')
         r_data = None 
         
@@ -271,8 +287,9 @@ class AquaIPy:
         :rtype: Response
 
         """
+        
+        self._validate_connection() 
         data = {"enable": enable}
-
         r = requests.put(self._base_path + "/schedule/enable", data = json.dumps(data) )
 
         r_data = None
