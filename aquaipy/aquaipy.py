@@ -61,8 +61,9 @@ class AquaIPy:
         
         ..  note:: It is **NOT** recommended to set *check_firmware_support=False*. Do so at your own risk!
 
-        :raises ConnectionError: If unable to connect to specified AI light.
-        :raises NotImplementedError: If the firmware version is unsupported.
+        :raises FirmwareError: If the firmware version is unsupported.
+        :raises ConnError: If unable to connect to specified AI light.
+        :raises MustBeParentError: the specified host must be the parent light, if there are multiple lights linked.
         
         :Example:
             >>> from aquaipy import AquaIPy
@@ -259,7 +260,9 @@ class AquaIPy:
 
         :returns: Schedule Enabled (*True*) / Schedule Disabled (*False*) or *None* if there's an error
         :rtype: bool
-
+        
+        :raises ConnError: if there is no valid connection to a device, usually because a previous call to ``connect()`` has failed
+       
         """
         
         self._validate_connection()
@@ -286,6 +289,8 @@ class AquaIPy:
         :returns: Response.Success if it works, or a value indicating the error, if there is an issue.
         :rtype: Response
 
+        :raises ConnError: if there is no valid connection to a device, usually because a previous call to ``connect()`` has failed
+        
         """
         
         self._validate_connection() 
@@ -317,6 +322,8 @@ class AquaIPy:
         :returns: list of valid colors or *None* if there's an error
         :rtype: list( color_1..color_n ) or None
 
+        :raises ConnError: if there is no valid connection to a device, usually because a previous call to ``connect()`` has failed
+        
         """
         
         colors = []
@@ -338,6 +345,8 @@ class AquaIPy:
         :returns: dictionary of color and brightness percentages, or *None* if there's an error
         :rtype: dict( color_1=percentage_1..color_n=percentage_n ) or None
 
+        :raises ConnError: if there is no valid connection to a device, usually because a previous call to ``connect()`` has failed
+        
         """
         
         colors = {}
@@ -391,6 +400,8 @@ class AquaIPy:
         :returns: Response.Success if it works, or a value indicating the error, if there is an issue.
         :rtype: Response
 
+        :raises ConnError: if there is no valid connection to a device, usually because a previous call to ``connect()`` has failed
+        
         """
         
         #Need to add better validation here
@@ -441,6 +452,8 @@ class AquaIPy:
         :returns: Response.Success if it works, or a value indicating the error, if there is an issue.
         :rtype: Response
 
+        :raises ConnError: if there is no valid connection to a device, usually because a previous call to ``connect()`` has failed
+        
         """
 
         if len(colors) < 1:
@@ -464,6 +477,8 @@ class AquaIPy:
         :returns: Response.Success if it works, or a value indicating the error, if there is an issue.
         :rtype: Response
 
+        :raises ConnError: if there is no valid connection to a device, usually because a previous call to ``connect()`` has failed
+        
         """
         
         if len(color)==0:
