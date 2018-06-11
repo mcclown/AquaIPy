@@ -2,6 +2,14 @@
 class TestData:
 
     @staticmethod
+    def primary_mac_hydra26hd():
+        return "D8976003AAAA"
+ 
+    @staticmethod
+    def primary_mac_primehd():
+        return "D8976004AAAA"
+
+    @staticmethod
     def identity_hydra26hd(): 
         
         return {
@@ -234,6 +242,114 @@ class TestData:
         "royal": 1283
     }
     
+    @staticmethod
+    def result_intensities_0p(): 
+        return {
+        "deep_red": 0,
+        "uv": 0,
+        "violet": 0,
+        "cool_white": 0,
+        "green": 0,
+        "blue": 0,
+        "royal": 0
+    }
+ 
+    @staticmethod
+    def result_intensities_33_333p(): 
+        return {
+        "deep_red": 333,
+        "uv": 333,
+        "violet": 333,
+        "cool_white": 333,
+        "green": 333,
+        "blue": 333,
+        "royal": 333
+    }
+    
+    @staticmethod
+    def result_intensities_100p(): 
+        return {
+        "deep_red": 1000,
+        "uv": 1000,
+        "violet": 1000,
+        "cool_white": 1000,
+        "green": 1000,
+        "blue": 1000,
+        "royal": 1000
+    }
+    
+    @staticmethod
+    def result_intensities_105p_hydra26hd(): 
+        return {
+        "deep_red": 1059,
+        "uv": 1278,
+        "violet": 1274,
+        "cool_white": 1136,
+        "green": 1046,
+        "blue": 1316,
+        "royal": 1126
+    }
+    
+    @staticmethod
+    def result_intensities_107_5893p_hydra26hd(): 
+        return {
+        "deep_red": 1090,
+        "uv": 1422,
+        "violet": 1415,
+        "cool_white": 1206,
+        "green": 1069,
+        "blue": 1479,
+        "royal": 1192
+    }
+    
+    @staticmethod
+    def result_intensities_110p_hydra26hd(): 
+        return {
+        "deep_red": 1118,
+        "uv": 1556,
+        "violet": 1547,
+        "cool_white": 1272,
+        "green": 1092,
+        "blue": 1632,
+        "royal": 1252
+    }
+    
+    @staticmethod
+    def result_intensities_105p_primehd(): 
+        return {
+        "deep_red": 1174,
+        "uv": 1257,
+        "violet": 1319,
+        "cool_white": 1241,
+        "green": 1162,
+        "blue": 1455,
+        "royal": 1227
+    }
+    
+    @staticmethod
+    def result_intensities_107_5893p_primehd(): 
+        return {
+        "deep_red": 1264,
+        "uv": 1390,
+        "violet": 1484,
+        "cool_white": 1366,
+        "green": 1246,
+        "blue": 1690,
+        "royal": 1345
+    }
+    
+    @staticmethod
+    def result_intensities_110p_primehd(): 
+        return {
+        "deep_red": 1348,
+        "uv": 1514,
+        "violet": 1638,
+        "cool_white": 1482,
+        "green": 1324,
+        "blue": 1909,
+        "royal": 1454
+    }
+
     @staticmethod
     def server_error():
         return {
