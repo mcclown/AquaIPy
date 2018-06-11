@@ -56,4 +56,3 @@ class MustBeParentError(Error):
         self.message = message
         self.firmware_version = firmware_version
 
-

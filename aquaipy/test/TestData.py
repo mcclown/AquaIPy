@@ -2,12 +2,12 @@
 class TestData:
 
     @staticmethod
-    def identity_1(): 
+    def identity_hydra26hd(): 
         
         return {
         "serial_number": "D8976003AAAA",
         "parent": "",
-        "firmware": "2.0.0",
+        "firmware": "2.2.0",
         "product": "Hydra TwentySix",
         "product_type": "Standard",
         "product_sub_type": "",
@@ -21,7 +21,26 @@ class TestData:
     }
 
     @staticmethod
-    def identity_2(): 
+    def identity_primehd():
+
+        return {
+        "serial_number": "D8976004AAAA",
+        "parent": "",
+        "firmware": "2.2.0",
+        "product": "Prime HD",
+        "product_type": "Standard",
+        "product_sub_type": "",
+        "product_color": "white",
+        "product_hw_rev": 4,
+        "cpu": "RT5350",
+        "img": "prime",
+        "mfg_date_utc": "2017-08-23 16:21:22",
+        "mfg_date": "2017-08-24 02:21:22",
+        "response_code": 0
+    }
+
+    @staticmethod
+    def identity_hydra26hd_unsupported_firmware(): 
         
         return {
         "serial_number": "D8976003AAAA",
@@ -253,6 +272,69 @@ class TestData:
                     "royal": 23888,
                     "uv": 7270
                 }
+            }
+        ],
+        "response_code": 0
+    }
+
+
+    @staticmethod
+    def power_primehd():
+        return {
+        "devices": [
+            {
+                "serial_number": "D8976004AAAA",
+                "type": "Prime HD",
+                "max_power": 48000,
+                "hd": {
+                    "royal": 16400,
+                    "cool_white": 15400,
+                    "green": 4100,
+                    "violet": 4000,
+                    "uv": 4630,
+                    "blue": 9670,
+                    "deep_red": 3380
+                },
+                "normal": {
+                    "royal": 13440,
+                    "cool_white": 12756,
+                    "green": 3132,
+                    "violet": 3458,
+                    "uv": 3876,
+                    "blue": 8712,
+                    "deep_red": 2626
+                }
+            }
+        ],
+        "response_code": 0
+    }
+
+    @staticmethod
+    def power_two_hd_devices():
+        return {
+        "devices": [
+            {
+                "serial_number": "D8976003AAAA",
+                "type": "Hydra TwentySix",
+                "max_power": 90000,
+                "hd": {
+                    "blue": 23137,
+                    "cool_white": 32272,
+                    "violet": 8654,
+                    "green": 8769,
+                    "deep_red": 6950,
+                    "royal": 33350,
+                    "uv": 8577
+                },
+                "normal": {
+                    "blue": 19975,
+                    "cool_white": 23592,
+                    "violet": 7317,
+                    "green": 4190,
+                    "deep_red": 3768,
+                    "royal": 23888,
+                    "uv": 7270
+                }
             },
             {
                 "serial_number": "D8976003BBBB",
@@ -283,11 +365,11 @@ class TestData:
 
 
     @staticmethod
-    def power_primehd():
+    def power_mixed_hd_devices():
         return {
         "devices": [
             {
-                "serial_number": "D89760043CCCC",
+                "serial_number": "D8976004AAAA",
                 "type": "Prime HD",
                 "max_power": 48000,
                 "hd": {
@@ -308,12 +390,33 @@ class TestData:
                     "blue": 8712,
                     "deep_red": 2626
                 }
+            },
+            {
+                "serial_number": "D8976003BBBB",
+                "type": "Hydra TwentySix",
+                "max_power": 90000,
+                "hd": {
+                    "blue": 23137,
+                    "cool_white": 32272,
+                    "violet": 8654,
+                    "green": 8769,
+                    "deep_red": 6950,
+                    "royal": 33350,
+                    "uv": 8577
+                },
+                "normal": {
+                    "blue": 19975,
+                    "cool_white": 23592,
+                    "violet": 7317,
+                    "green": 4190,
+                    "deep_red": 3768,
+                    "royal": 23888,
+                    "uv": 7270
+                }
             }
         ],
         "response_code": 0
     }
-
-
     @staticmethod
     def power_hydra26hd_hd():
         return {

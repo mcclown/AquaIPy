@@ -39,6 +39,106 @@ class Response(Enum):
     InvalidData = 6
 
 
+class HDDevice:
+
+    def __init__(self, raw_data, primary_mac_address = None):
+
+        self._primary_mac_address = primary_mac_address
+        self._mac_address = raw_data['serial_number']
+        self._mW_norm = {}
+        self._mW_hd = {}
+        self._max_mW = 0
+
+        #Get the values for 100%
+        for color, value in raw_data["normal"].items():
+            self._mW_norm[color] = value
+        
+        try:
+            #Get the values for HD
+            for color, value in raw_data["hd"].items():
+                self._mW_hd[color] = value
+
+            self._max_mW = raw_data["max_power"]
+            
+        except Exception:
+            #Potentially handle non-HD AI devices? #ToTest
+            print("Unable to retrieve HD mW values for device")
+
+
+    @property
+    def is_primary(self):
+        return self._primary_mac_address == self._mac_address
+
+
+    @property
+    def max_mW(self):
+        return self._max_mW
+
+
+    def convert_to_intensity(self, color, percentage):
+
+        if percentage < 0:
+            raise ValueError("Percentage must be greater than 0")
+        elif 0 <= percentage <= 100:
+            return round(percentage * 10)
+        else:
+
+            #                           HD_Percentage       
+            #  HD_Brightness_Value =    --------------  * 1000
+            #                           Max_HD_Percent
+            
+            max_percentage = ((self._mW_hd[color]) / self._mW_norm[color]) * 100
+
+            if percentage > max_percentage:
+                raise ValueError("Percentage for {} must be between 0 and {}" % (color, max_percentage))
+            
+            hd_percentage = percentage - 100
+            hd_brightness_value = (hd_percentage / (max_percentage - 100)) * 1000
+
+            return round(hd_brightness_value + 1000)
+
+
+    def convert_to_percentage(self, color, intensity):
+        
+        if intensity < 0 or intensity > 2000:
+            raise ValueError("intensity must be between 0 and 2000")
+        elif intensity <= 1000:
+            return intensity/10
+        else:
+
+            #                       Brightness Value - 1000         HD_Max_mW - Normal_Max_mW  
+            #   HD_Percentage =     -----------------------     *   -------------------------   *   100
+            #                               1000                            Normal_Max_mW
+
+
+            #Calculate max HD percentage available
+            max_hd_percentage = (self._mW_hd[color] - self._mW_norm[color]) / self._mW_norm[color]
+
+            #Response from /color: First 1000 is for 0 -> 100%, Second 1000 is for 100% -> Max HD% 
+            hd_in_use = (intensity - 1000) / 1000  
+
+            #Calculate total current percentage
+            return 100 + (max_hd_percentage * hd_in_use * 100)
+
+
+    def convert_to_mW(self, color, intensity):
+        
+        if intensity < 0 or intensity > 2000:
+            raise ValueError("intensity must be between 0 and 2000")
+        elif intensity <= 1000:
+            return self._mW_norm[color] * (intensity/1000)
+        else:
+
+            #                                                   intensity - 1000
+            # HD mW in use = (HD Max mW - Norm Max mW)    *     ----------------  
+            #                                                         1000
+
+            hd_in_use = (intensity - 1000)/1000
+            hd_mW_in_use = hd_in_use * (self._mW_hd[color] - self._mW_norm[color])
+
+            return self._mW_norm[color] + hd_mW_in_use
+
+
 class AquaIPy:
     """A class to encapsulate all functions of a AquaIllumination Prime HD & Hydra HD range of Lights 
     """
@@ -147,7 +247,8 @@ class AquaIPy:
     
         if self._base_path == None:
             raise ConnError("Error connecting to host", self._host)
-         
+
+
     def _setup_device_details(self, check_firmware_support):
         """
         Verify connectivity to the device and populate device attributes
@@ -173,6 +274,24 @@ class AquaIPy:
         if r_data['parent'] != "":
             raise MustBeParentError("Connected to non-parent device", r_data['parent'])
 
+        r = requests.get(self._base_path + "/power")
+        r_data = r.json()
+        if r_data['response_code'] != 0:
+            self._base_path = None
+            raise ConnError("Unable to retrieve device details", self._host)
+        
+        self._primary_device = None
+        self._other_devices = []
+
+        for device in r_data['devices']:
+
+            temp = HDDevice(device, self.mac_addr)
+
+            if temp.is_primary:
+                self._primary_device = temp
+            else:
+                self._other_devices.append(temp)
+   
     
     def _get_brightness(self):
         """
@@ -228,8 +347,6 @@ class AquaIPy:
     
         if r_data["response_code"] != 0:
             return Response.Error, None, None, None
- 
-        #Only handling the first device for the moment. In mixed HD & non-HD setups, devices are limited to non-HD modes, as far as I can tell.
 
         #Get the values for 100%
         for color, value in r_data["devices"][0]["normal"].items():
@@ -248,7 +365,6 @@ class AquaIPy:
             print("Unable to retrieve HD mW values for device")
         
         return Response.Success, mW_norm, mW_hd, total_max_mW
-
 
             
     #######################################################
@@ -358,37 +474,12 @@ class AquaIPy:
         if resp_b != Response.Success:
             return None
         
-        resp_l = mW_norm = mW_hd = total_max_mW = None
- 
         for color, value in brightness.items():
-            #Calculate the %power
             
-            if value <= 1000:
-                colors[color] = value/10
-            else:
-                #Should never hit this case for a non-HD AI device. #ToTest
-
-                #                       Brightness Value - 1000         HD_Max_mW - Normal_Max_mW  
-                #   HD_Percentage =     -----------------------     *   -------------------------   *   100
-                #                               1000                            Normal_Max_mW
-
-                #Only retrieve this info once, if it's required.
-                if resp_l == None:
-                    resp_l, mW_norm, mW_hd, total_max_mW = self._get_mW_limits()
-
-                    if resp_l != Response.Success:
-                        return None
-
-                #Calculate max HD percentage available
-                max_hd_percentage = (mW_hd[color] - mW_norm[color]) / mW_norm[color]
-
-                #Response from /color: First 1000 is for 0 -> 100%, Second 1000 is for 100% -> Max HD% 
-                hd_in_use = (value - 1000) / 1000  
-
-                #Calculate total current percentage
-                colors[color] = 100 + (max_hd_percentage * hd_in_use * 100)
+            colors[color] = self._primary_device.convert_to_percentage(color, value)
 
         return colors
+
 
     def set_colors_brightness(self, colors):
         """Set all colors to the specified color percentage.
@@ -408,42 +499,32 @@ class AquaIPy:
         if len(colors) == 0 or len(colors) < len(self.get_colors()):
             return Response.AllColorsMustBeSpecified
 
+        intensities = {}
+        mW_value = 0
             
-        response, mW_norm, mW_hd, total_mW_limit = self._get_mW_limits()
-
-        if response != Response.Success:
-            return response
-        
-        specified_mW = 0
-
         for color, value in colors.items():
+            
+            intensities[color] = self._primary_device.convert_to_intensity(color, value)
+            mW_value += self._primary_device.convert_to_mW(color, intensities[color])
 
-            if value <= 0:
-                colors[color] = 0
-            elif 0 < value <= 100:
-                colors[color] = round(value * 10)
-
-            else:
-
-                #                           HD_Percentage       
-                #  HD_Brightness_Value =    --------------  * 1000
-                #                           Max_HD_Percent
-                
-                hd_percentage = value - 100
-                max_hd_percentage = ((mW_hd[color] - mW_norm[color]) / mW_norm[color]) * 100
-                
-                hd_brightness_value = (hd_percentage / max_hd_percentage) * 1000
-
-                colors[color] = round(hd_brightness_value + 1000)
-
-            specified_mW += mW_norm[color] * (value / 100)
-
-        if specified_mW > total_mW_limit:
-            print("mWatts exceeded - Max:" + str(total_mW_limit) + " Specified:" + str(specified_mW))
+        if mW_value > self._primary_device.max_mW:
+            print("Primary Device: mWatts exceeded - max: {} specified: {}".format(str(self._primary_device.max_mW), str(mW_value)))
             return Response.PowerLimitExceeded
 
-        return self._set_brightness(colors)
-    
+        #Check if planned intensities will exceed any child devices max_mW (only issue if there are mixed devices paired, ie. Hydra26HD and PrimeHD)
+        for device in self._other_devices:
+            mW_value = 0
+
+            for color, value in intensities.items():
+                mW_value += device.convert_to_mW(color, value)
+
+            if mW_value > device.max_mW:
+                print("mWatts exceeded - max: {} specified: {}".format(str(device.max_mW), str(mW_value)))
+                return Response.PowerLimitExceeded
+
+        return self._set_brightness(intensities)
+   
+
     def patch_colors_brightness(self, colors):
         """Set specified colors, to the specified percentage brightness.
 
