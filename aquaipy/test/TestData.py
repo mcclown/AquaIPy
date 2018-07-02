@@ -394,7 +394,7 @@ class TestData:
 
     
     @staticmethod
-    def result_mW_hydra26hd_0(): 
+    def result_mw_hydra26hd_0(): 
         return {
         "deep_red": 0,
         "uv": 0,
@@ -406,7 +406,7 @@ class TestData:
     }
     
     @staticmethod
-    def result_mW_primehd_0(): 
+    def result_mw_primehd_0(): 
         return {
         "deep_red": 0,
         "uv": 0,
@@ -418,7 +418,7 @@ class TestData:
     }
     
     @staticmethod
-    def result_mW_hydra26hd_500(): 
+    def result_mw_hydra26hd_500(): 
         return {
         "deep_red": 1884.0,
         "uv": 3635.0,
@@ -430,7 +430,7 @@ class TestData:
     }
     
     @staticmethod
-    def result_mW_primehd_500(): 
+    def result_mw_primehd_500(): 
         return {
         "deep_red": 1313.0,
         "uv": 1938.0,
@@ -442,7 +442,7 @@ class TestData:
     }
 
     @staticmethod
-    def result_mW_hydra26hd_1000(): 
+    def result_mw_hydra26hd_1000(): 
         return {
         "deep_red": 3768.0,
         "uv": 7270.0,
@@ -454,7 +454,7 @@ class TestData:
     }
     
     @staticmethod
-    def result_mW_primehd_1000(): 
+    def result_mw_primehd_1000(): 
         return {
         "deep_red": 2626.0,
         "uv": 3876.0,
@@ -466,7 +466,7 @@ class TestData:
     }
 
     @staticmethod
-    def result_mW_hydra26hd_1500(): 
+    def result_mw_hydra26hd_1500(): 
         return {
         "deep_red": 5359.0,
         "uv": 7923.5,
@@ -478,7 +478,7 @@ class TestData:
     }
  
     @staticmethod
-    def result_mW_primehd_1500(): 
+    def result_mw_primehd_1500(): 
         return {
         "deep_red": 3003.0,
         "uv": 4253.0,
@@ -490,7 +490,7 @@ class TestData:
     }
  
     @staticmethod
-    def result_mW_hydra26hd_2000(): 
+    def result_mw_hydra26hd_2000(): 
         return {
         "deep_red": 6950.0,
         "uv": 8577.0,
@@ -502,7 +502,7 @@ class TestData:
     }
  
     @staticmethod
-    def result_mW_primehd_2000(): 
+    def result_mw_primehd_2000(): 
         return {
         "deep_red": 3380.0,
         "uv": 4630.0,

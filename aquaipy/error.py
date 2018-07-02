@@ -13,6 +13,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""This modules contains all the errors that are part of AquaIPy"""
+
 
 
 class Error(Exception):
@@ -29,6 +31,7 @@ class ConnError(Error):
     """
 
     def __init__(self, message, host):
+        super().__init__()
         self.message = message
         self.host = host
 
@@ -41,18 +44,20 @@ class FirmwareError(Error):
     """
 
     def __init__(self, message, firmware_version):
+        super().__init__()
         self.message = message
         self.firmware_version = firmware_version
 
 
 class MustBeParentError(Error):
-    """Raised when connecting to a light that isn't the parent. The ``AquaIPy`` library only supports connecting to a parent light
+    """Raised when connecting to a light that isn't the parent. The ``AquaIPy`` library only
+       supports connecting to a parent light
 
     :ivar message: error message
     :ivar parent_identifier: an identifier for the parent device
     """
 
     def __init__(self, message, parent_identifier):
+        super().__init__()
         self.message = message
         self.parent_identifier = parent_identifier
-

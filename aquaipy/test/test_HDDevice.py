@@ -8,16 +8,16 @@ from aquaipy.error import ConnError, FirmwareError, MustBeParentError
 from aquaipy.test.TestData import TestData
 
 
-@pytest.mark.parametrize("power_response, primary_mac, max_mW", [
+@pytest.mark.parametrize("power_response, primary_mac, max_mw", [
     (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), TestData.power_hydra26hd_max()),
     (TestData.power_primehd(), TestData.primary_mac_primehd(), TestData.power_primehd_max())
     ])
-def test_HDDevice_init(power_response, primary_mac, max_mW):
+def test_HDDevice_init(power_response, primary_mac, max_mw):
 
     device = HDDevice(power_response["devices"][0], primary_mac)
 
     assert device.is_primary
-    assert device.max_mW == max_mW
+    assert device.max_mw == max_mw
 
 
 @pytest.mark.parametrize("power_response, primary_mac, percentage, result_intensities", [
@@ -80,33 +80,33 @@ def test_HDDevice_convert_to_percentage_ValueError(intensity):
         device.convert_to_percentage("uv", intensity)
 
 
-@pytest.mark.parametrize("power_response, primary_mac, intensity, result_mW", [
-    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 0, TestData.result_mW_hydra26hd_0()),
-    (TestData.power_primehd(), TestData.primary_mac_primehd(), 0, TestData.result_mW_primehd_0()),
-    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 500, TestData.result_mW_hydra26hd_500()),
-    (TestData.power_primehd(), TestData.primary_mac_primehd(), 500, TestData.result_mW_primehd_500()),
-    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 1000, TestData.result_mW_hydra26hd_1000()),
-    (TestData.power_primehd(), TestData.primary_mac_primehd(), 1000, TestData.result_mW_primehd_1000()),
-    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 1500, TestData.result_mW_hydra26hd_1500()),
-    (TestData.power_primehd(), TestData.primary_mac_primehd(), 1500, TestData.result_mW_primehd_1500()),
-    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 2000, TestData.result_mW_hydra26hd_2000()),
-    (TestData.power_primehd(), TestData.primary_mac_primehd(), 2000, TestData.result_mW_primehd_2000()),
+@pytest.mark.parametrize("power_response, primary_mac, intensity, result_mw", [
+    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 0, TestData.result_mw_hydra26hd_0()),
+    (TestData.power_primehd(), TestData.primary_mac_primehd(), 0, TestData.result_mw_primehd_0()),
+    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 500, TestData.result_mw_hydra26hd_500()),
+    (TestData.power_primehd(), TestData.primary_mac_primehd(), 500, TestData.result_mw_primehd_500()),
+    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 1000, TestData.result_mw_hydra26hd_1000()),
+    (TestData.power_primehd(), TestData.primary_mac_primehd(), 1000, TestData.result_mw_primehd_1000()),
+    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 1500, TestData.result_mw_hydra26hd_1500()),
+    (TestData.power_primehd(), TestData.primary_mac_primehd(), 1500, TestData.result_mw_primehd_1500()),
+    (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), 2000, TestData.result_mw_hydra26hd_2000()),
+    (TestData.power_primehd(), TestData.primary_mac_primehd(), 2000, TestData.result_mw_primehd_2000()),
     ])
-def test_HDDevice_convert_to_mW(power_response, primary_mac, intensity, result_mW):
+def test_HDDevice_convert_to_mw(power_response, primary_mac, intensity, result_mw):
 
     device = HDDevice(power_response["devices"][0], primary_mac)
 
     for color in TestData.get_colors():
 
-        assert result_mW[color]  == device.convert_to_mW(color, intensity)
+        assert result_mw[color]  == device.convert_to_mw(color, intensity)
 
 
 @pytest.mark.parametrize("intensity", [-10, 2010]) 
-def test_HDDevice_convert_to_mW_ValueError(intensity):
+def test_HDDevice_convert_to_mw_ValueError(intensity):
 
     device = HDDevice(TestData.power_hydra26hd()["devices"][0], TestData.primary_mac_hydra26hd())
 
     with pytest.raises(ValueError):
-        device.convert_to_mW("uv", intensity)
+        device.convert_to_mw("uv", intensity)
 
 
