@@ -40,6 +40,8 @@ class Response(Enum):
 
 
 class HDDevice:
+    """A class that is created with the configuration of one of the HD range of lights, an handles conversions of data.
+    """
 
     def __init__(self, raw_data, primary_mac_address = None):
 
@@ -53,17 +55,12 @@ class HDDevice:
         for color, value in raw_data["normal"].items():
             self._mW_norm[color] = value
         
-        try:
-            #Get the values for HD
-            for color, value in raw_data["hd"].items():
-                self._mW_hd[color] = value
+        #Get the values for HD
+        for color, value in raw_data["hd"].items():
+            self._mW_hd[color] = value
 
-            self._max_mW = raw_data["max_power"]
+        self._max_mW = raw_data["max_power"]
             
-        except Exception:
-            #Potentially handle non-HD AI devices? #ToTest
-            print("Unable to retrieve HD mW values for device")
-
 
     @property
     def is_primary(self):
@@ -90,7 +87,7 @@ class HDDevice:
             max_percentage = ((self._mW_hd[color]) / self._mW_norm[color]) * 100
 
             if percentage > max_percentage:
-                raise ValueError("Percentage for {} must be between 0 and {}" % (color, max_percentage))
+                raise ValueError("Percentage for {} must be between 0 and {}".format(color, max_percentage))
             
             hd_percentage = percentage - 100
             hd_brightness_value = (hd_percentage / (max_percentage - 100)) * 1000
@@ -140,7 +137,7 @@ class HDDevice:
 
 
 class AquaIPy:
-    """A class to encapsulate all functions of a AquaIllumination Prime HD & Hydra HD range of Lights 
+    """A class to the AquaIllumination API, for their range of lights 
     """
     
     def __init__(self, name = None):
@@ -254,28 +251,41 @@ class AquaIPy:
         Verify connectivity to the device and populate device attributes
         """
 
-        r = requests.get(self._base_path + "/identity")
-        
         r_data = None
-        r_data = r.json()
+        
+        try:
+            r = requests.get(self._base_path + "/identity")
+        
+            r_data = None
+            r_data = r.json()
+        except:
+            self._base_path = None
+            raise ConnError("Unable to connect to host", self._host)
         
         if r_data['response_code'] != 0:
-            #Clear down base_path, if setup device fails
             self._base_path = None
-            raise ConnError("Error connecting to host", self._host)
+            raise ConnError("Error getting response for device identity", self._host)
             
         self._mac_addr = r_data['serial_number']
         self._firmware_version = r_data['firmware']
         self._product_type = r_data['product']
         
         if check_firmware_support and not self.supported_firmware:
+            self._base_path = None
             raise FirmwareError("Support is not available for this version of the AquaIllumination firmware yet.", self._firmware_version)
 
         if r_data['parent'] != "":
+            self._base_path = None
             raise MustBeParentError("Connected to non-parent device", r_data['parent'])
+
+        self._get_devices()
+
+
+    def _get_devices(self):
 
         r = requests.get(self._base_path + "/power")
         r_data = r.json()
+        
         if r_data['response_code'] != 0:
             self._base_path = None
             raise ConnError("Unable to retrieve device details", self._host)
@@ -327,45 +337,7 @@ class AquaIPy:
             return Response.Success
         else:
             return Response.Error
-
             
-    def _get_mW_limits(self):
-        """
-        Get mWatts limits in normal mode & HD mode, for each color channel. Also retrieve overall max mW available.
-        """
-        
-        self._validate_connection()
-        r = requests.get(self._base_path + "/power")
-    
-        r_data = None
-        
-        mW_norm = {}
-        mW_hd = {}
-        total_max_mW = 0
-
-        r_data = r.json()
-    
-        if r_data["response_code"] != 0:
-            return Response.Error, None, None, None
-
-        #Get the values for 100%
-        for color, value in r_data["devices"][0]["normal"].items():
-            mW_norm[color] = value
-        
-        try:
-            #Get the values for HD
-            for color, value in r_data["devices"][0]["hd"].items():
-                mW_hd[color] = value
-
-            #Don't know if this value is present on non-HD devices, until I can test.
-            total_max_mW = r_data["devices"][0]["max_power"]
-            
-        except Exception:
-            #Potentially handle non-HD AI devices? #ToTest
-            print("Unable to retrieve HD mW values for device")
-        
-        return Response.Success, mW_norm, mW_hd, total_max_mW
-
             
     #######################################################
     # Get/Set Manual Control (ie. Not using light schedule)
@@ -496,7 +468,7 @@ class AquaIPy:
         """
         
         #Need to add better validation here
-        if len(colors) == 0 or len(colors) < len(self.get_colors()):
+        if len(colors) < len(self.get_colors()):
             return Response.AllColorsMustBeSpecified
 
         intensities = {}

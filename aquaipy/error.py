@@ -54,5 +54,5 @@ class MustBeParentError(Error):
 
     def __init__(self, message, parent_identifier):
         self.message = message
-        self.firmware_version = firmware_version
+        self.parent_identifier = parent_identifier
 

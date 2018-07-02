@@ -10,16 +10,26 @@ from aquaipy.test.TestData import TestData
 
 def test_AquaIPy_init_raises_InvalidURL():
     
-    with pytest.raises(requests.exceptions.InvalidURL):
+    with pytest.raises(ConnError):
         api = AquaIPy()
         api.connect("")
 
 
 def test_AquaIPy_init_raises_requests_ConnectionError_bad_hostname():
     
-    with pytest.raises(requests.exceptions.ConnectionError):
+    with pytest.raises(ConnError):
         api = AquaIPy()
-        api.connect("mcclown.org")
+        api.connect("invalid-host")
+
+
+@patch("aquaipy.aquaipy.requests.get")
+def test_AquaIPy_init_raises_requests_MustBeParentError(mock_get):
+
+    mock_get.return_value.json.return_value = TestData.identity_not_parent()
+
+    with pytest.raises(MustBeParentError):
+        api = AquaIPy()
+        api.connect("valid-host")
 
 
 @patch("aquaipy.aquaipy.requests.get")
@@ -29,7 +39,7 @@ def test_AquaIPy_init_raises_ConnectionError_server_error(mock_get):
 
     with pytest.raises(ConnError):
         api = AquaIPy()
-        api.connect("mcclown.org")
+        api.connect("valid-host")
 
 def test_AquaIPy_init_with_name():
 
@@ -47,6 +57,44 @@ def test_AquaIPy_init_success():
     assert api.name == None
     assert api.firmware_version == "2.2.0"
     assert api.base_path == 'http://' + TestHelper.mock_hostname + '/api'
+
+def test_AquaIPy_validate_connection_fail():
+
+    api = AquaIPy()
+
+    with pytest.raises(ConnError):
+        api.connect("valid-host")
+
+    with pytest.raises(ConnError):
+        api._validate_connection()
+        
+
+@pytest.mark.parametrize("identity_response, power_response, other_count", [
+    (TestData.identity_hydra26hd(), TestData.power_hydra26hd(), 0),
+    (TestData.identity_primehd(), TestData.power_primehd(), 0),
+    (TestData.identity_hydra26hd(), TestData.power_two_hd_devices(), 1),
+    (TestData.identity_primehd(), TestData.power_mixed_hd_devices(), 1)
+    ])
+def test_AquaIPy_get_devices_success(identity_response, power_response, other_count):
+    
+    api = TestHelper.get_connected_instance(identity_response, power_response)
+
+    assert api._primary_device != None
+    assert len(api._other_devices) == other_count
+
+
+
+@patch('aquaipy.aquaipy.requests.get')
+def test_AquaIPy_get_devices_fail(mock_get):
+
+    api = TestHelper.get_connected_instance()
+
+    with patch('aquaipy.aquaipy.requests.get') as mock_get:
+        mock_get.return_value.json.return_value = TestData.server_error()
+
+        with pytest.raises(ConnError):
+            api._get_devices()
+
 
 @patch('aquaipy.aquaipy.requests.get')
 def test_AquaIPy_firmware_error(mock_get):
@@ -136,77 +184,6 @@ def test_AquaIPy_get_raw_brightness_error():
         response = api._get_brightness()
 
         assert response == (Response.Error, None)
-
-
-def test_AquaIPy_get_raw_mW_data_hydra26hd():
-
-    api = TestHelper.get_connected_instance()
-
-    with patch('aquaipy.aquaipy.requests.get') as mock_get:
-        mock_get.return_value.json.return_value = TestData.power_hydra26hd()
-
-        response, mW_norm, mW_hd, total_max_mW = api._get_mW_limits()
-
-        assert response == Response.Success
-        assert total_max_mW == 90000
-        
-        assert mW_norm["blue"] == 19975
-        assert mW_norm["cool_white"] == 23592
-        assert mW_norm["violet"] == 7317
-        assert mW_norm["green"] == 4190
-        assert mW_norm["deep_red"] == 3768
-        assert mW_norm["royal"] == 23888
-        assert mW_norm["uv"] == 7270
-
-        assert mW_hd["blue"] == 23137
-        assert mW_hd["cool_white"] == 32272
-        assert mW_hd["violet"] == 8654
-        assert mW_hd["green"] == 8769
-        assert mW_hd["deep_red"] == 6950
-        assert mW_hd["royal"] == 33350
-        assert mW_hd["uv"] == 8577
-
-
-def test_AquaIPy_get_raw_mW_data_primehd():
-
-    api = TestHelper.get_connected_instance()
-
-    with patch('aquaipy.aquaipy.requests.get') as mock_get:
-        mock_get.return_value.json.return_value = TestData.power_primehd()
-
-        response, mW_norm, mW_hd, total_max_mW = api._get_mW_limits()
-
-        assert response == Response.Success
-        assert total_max_mW == 48000
-        
-        assert mW_norm["blue"] == 8712
-        assert mW_norm["cool_white"] == 12756
-        assert mW_norm["violet"] == 3458
-        assert mW_norm["green"] == 3132
-        assert mW_norm["deep_red"] == 2626
-        assert mW_norm["royal"] == 13440
-        assert mW_norm["uv"] == 3876
-
-        assert mW_hd["blue"] == 9670
-        assert mW_hd["cool_white"] == 15400
-        assert mW_hd["violet"] == 4000
-        assert mW_hd["green"] == 4100
-        assert mW_hd["deep_red"] == 3380
-        assert mW_hd["royal"] == 16400
-        assert mW_hd["uv"] == 4630
-
-
-def test_AquaIPy_get_raw_mW_data_error():
-
-    api = TestHelper.get_connected_instance()
-
-    with patch('aquaipy.aquaipy.requests.get') as mock_get:
-
-        mock_get.return_value.json.return_value = TestData.server_error()
-
-        response = api._get_mW_limits()
-
-        assert response == (Response.Error, None, None, None)
 
 
 def test_AquaIPy_get_colors():
@@ -558,9 +535,15 @@ def test_AquaIPy_set_color_brightness_error():
             assert response == Response.AllColorsMustBeSpecified
 
 
-def test_AquaIPy_set_color_brightness_hd():
+@pytest.mark.parametrize("identity_response, power_response, result", [
+    (TestData.identity_hydra26hd(), TestData.power_hydra26hd(), TestData.set_result_colors_3_hydra26hd()),
+    (TestData.identity_primehd(), TestData.power_primehd(), TestData.set_result_colors_3_primehd()),
+    (TestData.identity_hydra26hd(), TestData.power_two_hd_devices(), TestData.set_result_colors_3_hydra26hd()),
+    (TestData.identity_primehd(), TestData.power_mixed_hd_devices(), TestData.set_result_colors_3_primehd())
+    ])
+def test_AquaIPy_set_color_brightness_hd(identity_response, power_response, result):
 
-    api = TestHelper.get_connected_instance()
+    api = TestHelper.get_connected_instance(identity_response, power_response)
 
     with patch.object(api, 'get_colors') as mock_get_colors:
         with patch.object(api, '_set_brightness') as mock_set:
@@ -570,7 +553,7 @@ def test_AquaIPy_set_color_brightness_hd():
 
             api.set_colors_brightness(TestData.set_colors_3())
 
-            mock_set.assert_called_once_with(TestData.set_result_colors_3())
+            mock_set.assert_called_once_with(result)
 
 
 @pytest.mark.parametrize("set_colors_max_hd, result_colors_max_hd, identity_response, power_response", [
@@ -592,21 +575,22 @@ def test_AquaIPy_set_color_brightness_max_hd(set_colors_max_hd, result_colors_ma
             mock_set.assert_called_once_with(result_colors_max_hd)
             assert response == Response.Success
 
-@pytest.mark.parametrize("power_norm, power_hd, power_max", [
-    (TestData.power_hydra26hd_norm(), TestData.power_hydra26hd_hd(), TestData.power_hydra26hd_max()),
-    (TestData.power_primehd_norm(), TestData.power_primehd_hd(), TestData.power_primehd_max())
+@pytest.mark.parametrize("identity_response, power_response, set_colors", [
+    (TestData.identity_hydra26hd(), TestData.power_hydra26hd(), TestData.set_colors_hd_exceeded_hydra26hd()),
+    (TestData.identity_primehd(), TestData.power_primehd(), TestData.set_colors_hd_exceeded_primehd()),
+    (TestData.identity_hydra26hd(), TestData.power_two_hd_devices(), TestData.set_colors_max_hd_primeHD()),
+    (TestData.identity_primehd(), TestData.power_mixed_hd_devices(), TestData.set_colors_hd_exceeded_hydra26hd())
     ])
-def test_AquaIPy_set_color_brightness_hd_exceeded(power_norm, power_hd, power_max):
+def test_AquaIPy_set_color_brightness_hd_exceeded(identity_response, power_response, set_colors):
 
-    api = TestHelper.get_connected_instance()
+    api = TestHelper.get_connected_instance(identity_response, power_response)
 
     with patch.object(api, 'get_colors') as mock_get_colors:
         with patch.object(api, '_set_brightness') as mock_set:
 
             mock_get_colors.return_value = TestData.get_colors()
-            mock_set.return_value = Response.Success
 
-            result = api.set_colors_brightness(TestData.set_colors_hd_exceeded())
+            result = api.set_colors_brightness(set_colors)
 
             mock_set.assert_not_called()
             assert result == Response.PowerLimitExceeded

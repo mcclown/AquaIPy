@@ -66,6 +66,24 @@ class TestData:
         "response_code": 0
     }
 
+    @staticmethod
+    def identity_not_parent():
+
+        return {
+        "serial_number": "D8976003BBBB",
+        "parent": "hydra26-D8976003AAAA",
+        "firmware": "2.2.0",
+        "product": "Hydra TwentySix",
+        "product_type": "Standard",
+        "product_sub_type": "",
+        "product_color": "black",
+        "product_hw_rev": 4,
+        "cpu": "RT5350",
+        "img": "prime",
+        "mfg_date_utc": "2017-06-27 18:12:33",
+        "mfg_date": "2017-06-28 04:12:33",
+        "response_code": 0
+    }
 
     @staticmethod
     def schedule_enabled():
@@ -193,7 +211,19 @@ class TestData:
     }
     
     @staticmethod
-    def set_colors_hd_exceeded(): 
+    def set_colors_hd_exceeded_primehd(): 
+        return {
+        "deep_red": 0,
+        "uv": 100,
+        "violet": 100,
+        "cool_white": 113,
+        "green": 100,
+        "blue": 100,
+        "royal": 108,
+    }
+
+    @staticmethod
+    def set_colors_hd_exceeded_hydra26hd(): 
         return {
         "deep_red": 0,
         "uv": 100,
@@ -207,7 +237,7 @@ class TestData:
 
 
     @staticmethod
-    def set_result_colors_3(): 
+    def set_result_colors_3_hydra26hd(): 
         return {
         "deep_red": 0,
         "uv": 420,
@@ -216,6 +246,18 @@ class TestData:
         "green": 0,
         "blue": 0,
         "royal": 1429
+    }
+    
+    @staticmethod
+    def set_result_colors_3_primehd(): 
+        return {
+        "deep_red": 0,
+        "uv": 420,
+        "violet": 1319,
+        "cool_white": 0,
+        "green": 0,
+        "blue": 0,
+        "royal": 1772
     }
 
     @staticmethod
@@ -350,6 +392,127 @@ class TestData:
         "royal": 1454
     }
 
+    
+    @staticmethod
+    def result_mW_hydra26hd_0(): 
+        return {
+        "deep_red": 0,
+        "uv": 0,
+        "violet": 0,
+        "cool_white": 0,
+        "green": 0,
+        "blue": 0,
+        "royal": 0
+    }
+    
+    @staticmethod
+    def result_mW_primehd_0(): 
+        return {
+        "deep_red": 0,
+        "uv": 0,
+        "violet": 0,
+        "cool_white": 0,
+        "green": 0,
+        "blue": 0,
+        "royal": 0
+    }
+    
+    @staticmethod
+    def result_mW_hydra26hd_500(): 
+        return {
+        "deep_red": 1884.0,
+        "uv": 3635.0,
+        "violet": 3658.5,
+        "cool_white": 11796.0,
+        "green": 2095.0,
+        "blue": 9987.5,
+        "royal": 11944.0
+    }
+    
+    @staticmethod
+    def result_mW_primehd_500(): 
+        return {
+        "deep_red": 1313.0,
+        "uv": 1938.0,
+        "violet": 1729.0,
+        "cool_white": 6378.0,
+        "green": 1566.0,
+        "blue": 4356.0,
+        "royal": 6720.0
+    }
+
+    @staticmethod
+    def result_mW_hydra26hd_1000(): 
+        return {
+        "deep_red": 3768.0,
+        "uv": 7270.0,
+        "violet": 7317.0,
+        "cool_white": 23592.0,
+        "green": 4190.0,
+        "blue": 19975.0,
+        "royal": 23888.0
+    }
+    
+    @staticmethod
+    def result_mW_primehd_1000(): 
+        return {
+        "deep_red": 2626.0,
+        "uv": 3876.0,
+        "violet": 3458.0,
+        "cool_white": 12756.0,
+        "green": 3132.0,
+        "blue": 8712.0,
+        "royal": 13440.0
+    }
+
+    @staticmethod
+    def result_mW_hydra26hd_1500(): 
+        return {
+        "deep_red": 5359.0,
+        "uv": 7923.5,
+        "violet": 7985.5,
+        "cool_white": 27932.0,
+        "green": 6479.5,
+        "blue": 21556.0,
+        "royal": 28619.0
+    }
+ 
+    @staticmethod
+    def result_mW_primehd_1500(): 
+        return {
+        "deep_red": 3003.0,
+        "uv": 4253.0,
+        "violet": 3729.0,
+        "cool_white": 14078.0,
+        "green": 3616.0,
+        "blue": 9191.0,
+        "royal": 14920.0
+    }
+ 
+    @staticmethod
+    def result_mW_hydra26hd_2000(): 
+        return {
+        "deep_red": 6950.0,
+        "uv": 8577.0,
+        "violet": 8654.0,
+        "cool_white": 32272.0,
+        "green": 8769.0,
+        "blue": 23137.0,
+        "royal": 33350.0
+    }
+ 
+    @staticmethod
+    def result_mW_primehd_2000(): 
+        return {
+        "deep_red": 3380.0,
+        "uv": 4630.0,
+        "violet": 4000.0,
+        "cool_white": 15400.0,
+        "green": 4100.0,
+        "blue": 9670.0,
+        "royal": 16400.0
+    }
+ 
     @staticmethod
     def server_error():
         return {
