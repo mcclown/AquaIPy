@@ -442,6 +442,18 @@ def test_AquaIPy_patch_color_brightness_invalid_data():
     assert response == Response.InvalidData
 
 
+def test_AquaIPy_patch_color_error_response():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, 'get_colors_brightness') as mock_get:
+
+        mock_get.return_value = Response.Error, []
+
+        result = api.patch_colors_brightness(TestData.set_colors_3())
+
+        assert result == Response.Error
+
 def test_AquaIPy_update_color_brightness():
 
     api = TestHelper.get_connected_instance()
@@ -511,6 +523,19 @@ def test_AquaIPy_update_color_brightness_invalid_data():
 
     response = api.update_color_brightness("", 0.0)
     assert response == Response.InvalidData
+
+
+def test_AquaIPy_update_color_error_response():
+
+    api = TestHelper.get_connected_instance()
+
+    with patch.object(api, 'get_colors_brightness') as mock_get:
+
+        mock_get.return_value = Response.Error, []
+
+        result = api.update_color_brightness("deep_red", 10)
+
+        assert result == Response.Error
 
 
 def test_AquaIPy_update_color_brightness_no_action_required():
