@@ -14,5 +14,14 @@ aquaipy.aquaipy module
     :undoc-members:
     :show-inheritance:
 
+aquaipy.error module
+----------------------
+
+.. automodule:: aquaipy.error
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 
 

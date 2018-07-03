@@ -36,7 +36,7 @@ class PyTest(TestCommand):
 
 setup(
     name='AquaIPy',
-    version=aquaipy._version_,
+    version=aquaipy._VERSION_,
     url='http://github.com/mcclown/AquaIPy/',
     license='Apache Software License',
     author='Stephen Mc Gowan',
