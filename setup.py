@@ -20,8 +20,8 @@ def read(*filenames, **kwargs):
     return sep.join(buf)
 
 
-# Original, need to create README.rst with pandoc - long_description = read('README.txt', 'CHANGES.txt')
-long_description = read('README.md')
+# Convert README.md with pandoc
+long_description = read('README.rst')
 
 class PyTest(TestCommand):
     def finalize_options(self):
