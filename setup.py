@@ -35,7 +35,7 @@ class PyTest(TestCommand):
         sys.exit(errcode)
 
 setup(
-    name='AquaIPy',
+    name='aquaipy',
     version=aquaipy._VERSION_,
     url='http://github.com/mcclown/AquaIPy/',
     license='Apache Software License',
