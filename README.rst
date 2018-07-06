@@ -6,16 +6,21 @@ AquaIPy
 A module for working with the AquaIllumination range of aquarium lights.
 The following functions are currently supported
 
--  Support for the HD range of light, including single lights, paired
-   lights, of the same model and paired lights, with mixed models
+-  Support for the HD range of lights, including single lights, paired
+   lights (of the same model) and paired lights (with mixed models)
 -  Enabling/Disabling the schedule
 -  Querying the current brightness of the lights
 -  Setting the brightness of the lights
 
-I personally own Prime HD and Hydra 26HD lights, so those are tested
-thoroughly. Hydra 52 HDs should work but I haven't validated them yet.
+This library has been primarily tested with Prime HD and Hydra 26HD
+lights, as that is what the author owns. Hydra 52 HDs should work but
+haven't been validated. Also the non-HD range of lights are not
+currently supported, although it should be possible to add that support.
+If you would like to help fix either of these cases, please contact me
+via GitHub or by email.
+
 This module is in no way endorsed by AquaIllumination and you use it at
-your own risk. It could and probably does, invalidate your warranty.
+your own risk. It could, and probably does, invalidate your warranty.
 
 Generated documentation can be found
 `here <http://aquaipy.readthedocs.io/en/latest/>`__
@@ -24,7 +29,7 @@ Quickstart
 ----------
 
 Install aquaipy using ``pip``: ``$ pip install aquaipy``. Once that is
-complete you can import AquaIPy and connect to your light.
+complete you can import the AquaIPy class and connect to your lights.
 
 .. code:: python
 
