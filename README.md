@@ -43,7 +43,7 @@ Once the class is initialised and connected, you can query and update your light
 <Response.Success: 0>
 ```
 
-##Issue & Questions
+##Issues & Questions
 
 If you have any issues, or questions, please feel free to contact me, or open an issue on GitHub
 

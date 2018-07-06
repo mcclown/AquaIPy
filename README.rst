@@ -50,8 +50,8 @@ your light.
     >>> ai.update_color_brightness('deep_red', -15.2)
     <Response.Success: 0>
 
-Issue & Questions
------------------
+Issues & Questions
+------------------
 
 If you have any issues, or questions, please feel free to contact me, or
 open an issue on GitHub
