@@ -19,7 +19,8 @@ This module is in no way endorsed by AquaIllumination and you use it at your own
 
 Generated documentation can be found [here](http://aquaipy.readthedocs.io/en/latest/)
 
-##Quickstart
+Quickstart
+----------
 
 Install aquaipy using `pip`: `$ pip install aquaipy`. Once that is complete you can import the AquaIPy class and connect to your lights.
 
@@ -46,7 +47,8 @@ Once the class is initialised and connected, you can query and update your light
 <Response.Success: 0>
 ```
 
-##Issues & Questions
+Issues & Questions
+------------------
 
 If you have any issues, or questions, please feel free to contact me, or open an issue on GitHub
 
