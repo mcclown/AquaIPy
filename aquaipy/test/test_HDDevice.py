@@ -2,8 +2,7 @@ import pytest
 from unittest.mock import Mock, patch
 import decimal
 
-from aquaipy import AquaIPy, Response 
-from aquaipy.aquaipy import HDDevice
+from aquaipy.aquaipy import HDDevice, AquaIPy, Response
 from aquaipy.error import ConnError, FirmwareError, MustBeParentError
 from aquaipy.test.TestData import TestData
 

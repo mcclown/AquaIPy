@@ -14,11 +14,6 @@
 #   limitations under the License.
 #
 
-"""
-*AquaiPy* provides an API for controlling the AquaIllumination Prime & Hydra series of aquarium
-lights.
-"""
-
-from .aquaipy import AquaIPy, Response
+"""*AquaiPy* provides an API for the AquaIllumination range of lights."""
 
 _VERSION_ = "0.1.0"
