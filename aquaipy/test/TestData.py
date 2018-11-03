@@ -2,12 +2,34 @@
 class TestData:
 
     @staticmethod
+    def primary_mac_hydra52hd():
+        return "D89760036700"
+
+    @staticmethod
     def primary_mac_hydra26hd():
         return "D8976003AAAA"
  
     @staticmethod
     def primary_mac_primehd():
         return "D8976004AAAA"
+    
+    @staticmethod
+    def identity_hydra52hd():
+        return {
+        "serial_number": "D89760036700",
+        "parent": "",
+        "firmware": "2.2.0",
+        "product": "Hydra FiftyTwo",
+        "product_type": "Standard",
+        "product_sub_type": "",
+        "product_color": "black",
+        "product_hw_rev": 4,
+        "cpu": "RT5350",
+        "img": "prime",
+        "mfg_date_utc": "2017-05-09 15:18:50",
+        "mfg_date": "2017-05-10 01:18:50",
+        "response_code": 0
+    }
 
     @staticmethod
     def identity_hydra26hd(): 
@@ -187,7 +209,7 @@ class TestData:
     }
     
     @staticmethod
-    def set_colors_max_hd_primeHD(): 
+    def set_colors_max_hd_primehd():
         return {
         "deep_red": 100,
         "uv": 102.04256965944272,
@@ -199,7 +221,7 @@ class TestData:
     }
     
     @staticmethod
-    def set_colors_max_hd_hydra26HD(): 
+    def set_colors_max_hd_hydra26hd():
         return {
         "deep_red": 2.6,
         "uv": 104.54843191196699,
@@ -208,6 +230,18 @@ class TestData:
         "green": 3.4,
         "blue": 104.73310638297872,
         "royal": 111.209586403215
+    }
+    
+    @staticmethod
+    def set_colors_max_hd_hydra52hd():
+        return {
+        "deep_red": 100,
+        "uv": 156.395521648667,
+        "violet": 157.8024373328049,
+        "cool_white": 100,
+        "green": 100,
+        "blue": 100,
+        "royal": 62.1490263045547
     }
     
     @staticmethod
@@ -233,8 +267,18 @@ class TestData:
         "blue": 100,
         "royal": 108,
     }
-
-
+    
+    @staticmethod
+    def set_colors_hd_exceeded_mixed(): 
+        return {
+        "deep_red": 123.63069306930693,
+        "uv": 116.00985552115583,
+        "violet": 112.89953730480046,
+        "cool_white": 21,
+        "green": 125.43627075351213,
+        "blue": 109.04997704315886,
+        "royal": 118.12559523809523,
+    }
 
     @staticmethod
     def set_result_colors_3_hydra26hd(): 
@@ -261,7 +305,7 @@ class TestData:
     }
 
     @staticmethod
-    def set_result_colors_max_hd_primeHD(): 
+    def set_result_colors_max_hd_primehd(): 
         return {
         "deep_red": 1000,
         "uv": 1105,
@@ -273,7 +317,7 @@ class TestData:
     }
 
     @staticmethod
-    def set_result_colors_max_hd_hydra26HD(): 
+    def set_result_colors_max_hd_hydra26hd(): 
         return {
         "deep_red": 26,
         "uv": 1253,
@@ -282,6 +326,18 @@ class TestData:
         "green": 34,
         "blue": 1299,
         "royal": 1283
+    }
+    
+    @staticmethod
+    def set_result_colors_max_hd_hydra52hd(): 
+        return {
+        "deep_red": 1000,
+        "uv": 2000,
+        "violet": 2000,
+        "cool_white": 1000,
+        "green": 1000,
+        "blue": 1000,
+        "royal": 621
     }
     
     @staticmethod
@@ -524,6 +580,37 @@ class TestData:
         return {
             "response_code":0
             }
+    
+    @staticmethod
+    def power_hydra52hd():
+        return {
+        "devices":[
+            {
+                "serial_number":"D89760036700",
+                "type":"Hydra FiftyTwo",
+                "max_power":120000,
+                "hd":{
+                    "royal":61380,
+                    "cool_white":59395,
+                    "deep_red":12791,
+                    "violet":15927,
+                    "uv":15785,
+                    "blue":42583,
+                    "green":16139
+                },
+                "normal":{
+                    "royal":30451,
+                    "cool_white":30485,
+                    "deep_red":4055,
+                    "violet":10093,
+                    "uv":10093,
+                    "blue":30773,
+                    "green":4050
+                }
+            }
+        ],
+        "response_code":0
+    }
 
     @staticmethod
     def power_hydra26hd():
@@ -696,57 +783,10 @@ class TestData:
         ],
         "response_code": 0
     }
-    @staticmethod
-    def power_hydra26hd_hd():
-        return {
-            "blue": 23137,
-            "cool_white": 32272,
-            "violet": 8654,
-            "green": 8769,
-            "deep_red": 6950,
-            "royal": 33350,
-            "uv": 8577
-        }
-
 
     @staticmethod
-    def power_primehd_hd():
-        return {
-                    "royal": 16400,
-                    "cool_white": 15400,
-                    "green": 4100,
-                    "violet": 4000,
-                    "uv": 4630,
-                    "blue": 9670,
-                    "deep_red": 3380
-                }
-
-
-    @staticmethod
-    def power_hydra26hd_norm():
-        return {
-            "blue": 19975,
-            "cool_white": 23592,
-            "violet": 7317,
-            "green": 4190,
-            "deep_red": 3768,
-            "royal": 23888,
-            "uv": 7270
-        }
-
-
-    @staticmethod
-    def power_primehd_norm():
-        return {
-                    "royal": 13440,
-                    "cool_white": 12756,
-                    "green": 3132,
-                    "violet": 3458,
-                    "uv": 3876,
-                    "blue": 8712,
-                    "deep_red": 2626
-                }
-
+    def power_hydra52hd_max():
+        return 120000
     
     @staticmethod
     def power_hydra26hd_max():
@@ -756,6 +796,3 @@ class TestData:
     @staticmethod
     def power_primehd_max():
         return 48000
-
-
-

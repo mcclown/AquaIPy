@@ -69,6 +69,7 @@ def test_AquaIPy_validate_connection_fail():
         
 
 @pytest.mark.parametrize("identity_response, power_response, other_count", [
+    (TestData.identity_hydra52hd(), TestData.power_hydra52hd(), 0),
     (TestData.identity_hydra26hd(), TestData.power_hydra26hd(), 0),
     (TestData.identity_primehd(), TestData.power_primehd(), 0),
     (TestData.identity_hydra26hd(), TestData.power_two_hd_devices(), 1),
@@ -581,8 +582,9 @@ def test_AquaIPy_set_color_brightness_hd(identity_response, power_response, resu
 
 
 @pytest.mark.parametrize("set_colors_max_hd, result_colors_max_hd, identity_response, power_response", [
-    (TestData.set_colors_max_hd_hydra26HD(), TestData.set_result_colors_max_hd_hydra26HD(), TestData.identity_hydra26hd(), TestData.power_hydra26hd()),
-    (TestData.set_colors_max_hd_primeHD(), TestData.set_result_colors_max_hd_primeHD(), TestData.identity_primehd(), TestData.power_primehd())
+    (TestData.set_colors_max_hd_hydra52hd(), TestData.set_result_colors_max_hd_hydra52hd(), TestData.identity_hydra52hd(), TestData.power_hydra52hd()),
+    (TestData.set_colors_max_hd_hydra26hd(), TestData.set_result_colors_max_hd_hydra26hd(), TestData.identity_hydra26hd(), TestData.power_hydra26hd()),
+    (TestData.set_colors_max_hd_primehd(), TestData.set_result_colors_max_hd_primehd(), TestData.identity_primehd(), TestData.power_primehd())
     ])
 def test_AquaIPy_set_color_brightness_max_hd(set_colors_max_hd, result_colors_max_hd, identity_response, power_response):
 
@@ -602,8 +604,8 @@ def test_AquaIPy_set_color_brightness_max_hd(set_colors_max_hd, result_colors_ma
 @pytest.mark.parametrize("identity_response, power_response, set_colors", [
     (TestData.identity_hydra26hd(), TestData.power_hydra26hd(), TestData.set_colors_hd_exceeded_hydra26hd()),
     (TestData.identity_primehd(), TestData.power_primehd(), TestData.set_colors_hd_exceeded_primehd()),
-    (TestData.identity_hydra26hd(), TestData.power_two_hd_devices(), TestData.set_colors_max_hd_primeHD()),
-    (TestData.identity_primehd(), TestData.power_mixed_hd_devices(), TestData.set_colors_hd_exceeded_hydra26hd())
+    (TestData.identity_hydra26hd(), TestData.power_two_hd_devices(), TestData.set_colors_max_hd_primehd()),
+    (TestData.identity_primehd(), TestData.power_mixed_hd_devices(), TestData.set_colors_hd_exceeded_mixed())
     ])
 def test_AquaIPy_set_color_brightness_hd_exceeded(identity_response, power_response, set_colors):
 

@@ -77,6 +77,15 @@ class HDDevice:
         return self._primary_mac_address == self._mac_address
 
     @property
+    def mac_address(self):
+        """Get devices MAC address/serial number.
+
+        :returns: MAC address of device
+        :rtype: str
+        """
+        return self._mac_address
+
+    @property
     def max_mw(self):
         """Get the max mWatts supported power level for the device.
 
@@ -542,8 +551,9 @@ class AquaIPy:
                 mw_value += device.convert_to_mw(color, value)
 
             if mw_value > device.max_mw:
-                print("mWatts exceeded - max: {} specified: {}"
-                      .format(str(device.max_mw), str(mw_value)))
+                print("mWatts exceeded - device: {} max: {} specified: {}"
+                      .format(device.mac_address, str(device.max_mw),
+                              str(mw_value)))
                 return Response.PowerLimitExceeded
 
         return self._set_brightness(intensities)

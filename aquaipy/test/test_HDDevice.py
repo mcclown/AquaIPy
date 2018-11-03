@@ -8,6 +8,7 @@ from aquaipy.test.TestData import TestData
 
 
 @pytest.mark.parametrize("power_response, primary_mac, max_mw", [
+    (TestData.power_hydra52hd(), TestData.primary_mac_hydra52hd(), TestData.power_hydra52hd_max()),
     (TestData.power_hydra26hd(), TestData.primary_mac_hydra26hd(), TestData.power_hydra26hd_max()),
     (TestData.power_primehd(), TestData.primary_mac_primehd(), TestData.power_primehd_max())
     ])
