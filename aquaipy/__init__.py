@@ -16,4 +16,6 @@
 
 """*AquaiPy* provides an API for the AquaIllumination range of lights."""
 
-_VERSION_ = "0.1.0"
+from .aquaipy import AquaIPy, Response  # noqa: F401
+
+_VERSION_ = "1.0.0"

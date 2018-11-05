@@ -25,7 +25,7 @@ import requests
 from aquaipy.error import ConnError, FirmwareError, MustBeParentError
 
 MIN_SUPPORTED_AI_FIRMWARE_VERSION = "2.0.0"
-MAX_SUPPORTED_AI_FIRMWARE_VERSION = "2.2.0"
+MAX_SUPPORTED_AI_FIRMWARE_VERSION = "2.4.0"
 
 
 class Response(Enum):

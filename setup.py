@@ -1,5 +1,5 @@
 from __future__ import print_function
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
 import io
 import codecs
@@ -33,6 +33,17 @@ class PyTest(TestCommand):
         import pytest
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
+        
+
+class CleanCommand(Command):
+    """Custom clean command to tidy up the project root."""
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
 setup(
     name='aquaipy',
@@ -42,7 +53,7 @@ setup(
     author='Stephen Mc Gowan',
     tests_require=['pytest'],
     install_requires=['requests>=2.18.4'],
-    cmdclass={'test': PyTest},
+    cmdclass={'test': PyTest, 'clean': CleanCommand},
     author_email='mcclown@gmail.com',
     description='Python library for controlling the AquaIllumination range of aquarium lights',
     long_description=long_description,
