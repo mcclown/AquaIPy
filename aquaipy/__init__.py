@@ -18,4 +18,4 @@
 
 from .aquaipy import AquaIPy, Response  # noqa: F401
 
-_VERSION_ = "1.0.0"
+_VERSION_ = "1.0.1"
