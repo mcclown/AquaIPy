@@ -622,6 +622,7 @@ def test_AquaIPy_set_color_brightness_hd_exceeded(identity_response, power_respo
             assert result == Response.PowerLimitExceeded
 
 
+
 class TestHelper:
 
     mock_hostname = 'valid-hostname'
@@ -640,6 +641,3 @@ class TestHelper:
             api.connect(TestHelper.mock_hostname)
 
         return api
-
-
-
