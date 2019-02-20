@@ -573,10 +573,10 @@ class AquaIPy:
         if len(colors) < 1:
             return Response.InvalidData
 
-        response, brightness = self.get_colors_brightness()
+        brightness = self.get_colors_brightness()
 
-        if response != Response.Success:
-            return response
+        if brightness is None:
+            return Response.Error
 
         for color, value in colors.items():
             brightness[color] = value
@@ -604,10 +604,10 @@ class AquaIPy:
         if value == 0:
             return Response.Success
 
-        response, brightness = self.get_colors_brightness()
+        brightness = self.get_colors_brightness()
 
-        if response != Response.Success:
-            return response
+        if brightness is None:
+            return Response.Error
 
         brightness[color] += value
 
