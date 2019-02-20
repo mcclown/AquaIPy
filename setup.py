@@ -26,7 +26,7 @@ long_description = read('README.rst')
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = []
+        self.test_args = ["-rxXs"]
         self.test_suite = True
 
     def run_tests(self):
@@ -60,7 +60,6 @@ setup(
     packages=['aquaipy'],
     include_package_data=True,
     platforms='any',
-    test_suite='aquaipy.test.test_aquaipy',
     classifiers = [
         'Programming Language :: Python',
         'Development Status :: 4 - Beta',
