@@ -26,7 +26,7 @@ long_description = read('README.rst')
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ["-rxXs"]
+        self.test_args = ["-rs"]
         self.test_suite = True
 
     def run_tests(self):
