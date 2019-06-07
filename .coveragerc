@@ -1,0 +1,9 @@
+[run]
+branch=True
+concurrency=multiprocessing
+source=aquaipy
+omit=*test*
+
+[report]
+fail_under=100
+show_missing=True

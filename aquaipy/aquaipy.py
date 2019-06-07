@@ -15,12 +15,13 @@
 
 """Module for working with the AquaIllumination range of lights."""
 
-import json
-from enum import Enum
+import asyncio
 # pylint: disable=no-name-in-module,import-error
 from distutils.version import StrictVersion
+from enum import Enum
+import json
 
-import requests
+import aiohttp
 
 from aquaipy.error import ConnError, FirmwareError, MustBeParentError
 
@@ -205,8 +206,9 @@ class AquaIPy:
 
     # pylint: disable=too-many-instance-attributes
     # All attributes are required, in this case.
+    # pylint: disable=too-many-public-methods
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, session=None, loop=None):
         """Initialise class, with an optional instance name.
 
         :param name: Instance name, not currently used for anything.
@@ -221,10 +223,25 @@ class AquaIPy:
         self._primary_device = None
         self._other_devices = []
 
-    def connect(self, host, check_firmware_support=True):
-        """Connect **AquaIPy** instance to a specified AI light.
+        self._loop = loop
 
-        Also verifies connectivity and firmware version support.
+        try:
+            self._loop = asyncio.get_event_loop()
+            self._loop_is_local = False
+        except RuntimeError:
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+            self._loop_is_local = True
+
+        if session is None:
+            self._session = aiohttp.ClientSession()
+            self._session_is_local = True
+        else:
+            self._session = session
+            self._session_is_local = False
+
+    def connect(self, host, check_firmware_support=True):
+        """Connect **AquaIPy** instance to a specifed AI light, synchronously.
 
         :param host: Hostname/IP of AI light, for paired lights this should be
             the parent light.
@@ -245,10 +262,57 @@ class AquaIPy:
             >>> ai.connect("192.168.1.1")
 
         """
+        return self._loop.run_until_complete(
+            self.async_connect(host, check_firmware_support))
+
+    async def async_connect(self, host, check_firmware_support=True):
+        """Connect **AquaIPy** instance to a specified AI light.
+
+        Also verifies connectivity and firmware version support.
+
+        :param host: Hostname/IP of AI light, for paired lights this should be
+            the parent light.
+        :param check_firmware_support: Set to False to skip the firmware check
+        :type check_firmware_support: bool
+
+        ..  note:: It is **NOT** recommended to set
+            *check_firmware_support=False*. Do so at your own risk!
+
+        :raises FirmwareError: If the firmware version is unsupported.
+        :raises ConnError: If unable to connect to specified AI light.
+        :raises MustBeParentError: the specified host must be the parent
+            light, if there are multiple lights linked.
+
+        :Example:
+            >>> from aquaipy import AquaIPy
+            >>> ai = AquaIPy()
+            >>> await ai.async_connect("192.168.1.1")
+
+        """
         self._host = host
         self._base_path = 'http://' + host + '/api'
 
-        self._setup_device_details(check_firmware_support)
+        await self._async_setup_device_details(check_firmware_support)
+
+    def close(self):
+        """Clean-up and close the underlying async dependancies..
+
+        .. note:: There is no async method, as it is assumed if you are using
+           async functions, you will use your own event loop and
+           aiohttp.ClientSession and pass them in. This will close the client
+           session and event loop, if they were created by this object, when
+           it was initialised.
+        """
+        self._base_path = None
+
+        if self._session_is_local:
+            self._loop.run_until_complete(self._session.close())
+
+        if self._loop_is_local:
+            self._loop.stop()
+            pending_tasks = asyncio.Task.all_tasks()
+            self._loop.run_until_complete(asyncio.gather(*pending_tasks))
+            self._loop.close()
 
     @property
     def mac_addr(self):
@@ -321,17 +385,20 @@ class AquaIPy:
         if self._base_path is None:
             raise ConnError("Error connecting to host", self._host)
 
-    def _setup_device_details(self, check_firmware_support):
+    async def _async_setup_device_details(self, check_firmware_support):
         """Verify connection to the device and populate device attributes."""
         r_data = None
 
         try:
-            resp = requests.get(self._base_path + "/identity")
+            path = "{0}/{1}".format(self._base_path, "identity")
+            async with self._session.get(path) as resp:
 
-            r_data = None
-            r_data = resp.json()
+                r_data = await resp.json()
         except Exception:
             self._base_path = None
+
+            import traceback
+            traceback.print_exc()
             raise ConnError("Unable to connect to host", self._host)
 
         if r_data['response_code'] != 0:
@@ -354,62 +421,76 @@ class AquaIPy:
             raise MustBeParentError(
                 "Connected to non-parent device", r_data['parent'])
 
-        self._get_devices()
+        await self._async_get_devices()
 
-    def _get_devices(self):
+    async def _async_get_devices(self):
         """Populate the device attributes of the current class instance."""
-        resp = requests.get(self._base_path + "/power")
-        r_data = resp.json()
+        path = "{0}/{1}".format(self._base_path, "power")
+        async with self._session.get(path) as resp:
 
-        if r_data['response_code'] != 0:
-            self._base_path = None
-            raise ConnError("Unable to retrieve device details", self._host)
+            r_data = await resp.json()
+            if r_data['response_code'] != 0:
+                self._base_path = None
+                raise ConnError(
+                    "Unable to retrieve device details", self._host)
 
-        self._primary_device = None
-        self._other_devices = []
+            self._primary_device = None
+            self._other_devices = []
 
-        for device in r_data['devices']:
+            for device in r_data['devices']:
+                temp = HDDevice(device, self.mac_addr)
 
-            temp = HDDevice(device, self.mac_addr)
+                if temp.is_primary:
+                    self._primary_device = temp
+                else:
+                    self._other_devices.append(temp)
 
-            if temp.is_primary:
-                self._primary_device = temp
-            else:
-                self._other_devices.append(temp)
-
-    def _get_brightness(self):
+    async def _async_get_brightness(self):
         """Get raw intensity values back from API."""
         self._validate_connection()
-        resp = requests.get(self._base_path + "/colors")
 
-        r_data = None
-        r_data = resp.json()
+        path = "{0}/{1}".format(self._base_path, "colors")
+        async with self._session.get(path) as resp:
 
-        if r_data["response_code"] != 0:
-            return Response.Error, None
+            r_data = await resp.json()
 
-        del r_data["response_code"]
+            if r_data["response_code"] != 0:
+                return Response.Error, None
 
-        return Response.Success, r_data
+            del r_data["response_code"]
 
-    def _set_brightness(self, body):
+            return Response.Success, r_data
+
+    async def _async_set_brightness(self, body):
         """Set raw intensity values, via AI API."""
         self._validate_connection()
-        resp = requests.post(self._base_path + "/colors", json=body)
 
-        r_data = None
-        r_data = resp.json()
+        path = "{0}/{1}".format(self._base_path, "colors")
+        async with self._session.post(path, json=body) as resp:
 
-        if r_data["response_code"] != 0:
-            return Response.Error
+            r_data = await resp.json()
 
-        return Response.Success
+            if r_data["response_code"] != 0:
+                return Response.Error
+
+            return Response.Success
 
     #######################################################
     # Get/Set Manual Control (ie. Not using light schedule)
     #######################################################
-
     def get_schedule_state(self):
+        """Check if light schedule is enabled/disabled, synchronously.
+
+        :returns: Schedule Enabled (*True*) / Schedule Disabled (*False*) or
+            *None* if there's an error
+        :rtype: bool
+
+        :raises ConnError: if there is no valid connection to a device,
+            usually because a previous call to ``connect()`` has failed
+        """
+        return self._loop.run_until_complete(self.async_get_schedule_state())
+
+    async def async_get_schedule_state(self):
         """Check if light schedule is enabled/disabled.
 
         :returns: Schedule Enabled (*True*) / Schedule Disabled (*False*) or
@@ -420,17 +501,32 @@ class AquaIPy:
             usually because a previous call to ``connect()`` has failed
         """
         self._validate_connection()
-        resp = requests.get(self._base_path + '/schedule/enable')
-        r_data = None
+        path = "{0}/{1}".format(self._base_path, "schedule/enable")
+        async with self._session.get(path) as resp:
 
-        r_data = resp.json()
+            r_data = await resp.json()
 
-        if r_data is None or r_data["response_code"] != 0:
-            return None
+            if r_data is None or r_data["response_code"] != 0:
+                return None
 
-        return r_data["enable"]
+            return r_data["enable"]
 
     def set_schedule_state(self, enable):
+        """Enable/Disable the light schedule, synchronously.
+
+        :param enable: Schedule Enable (*True*) / Schedule Disable (*False*)
+        :type enable: bool
+        :returns: Response.Success if it works, or a value indicating the
+            error, if there is an issue.
+        :rtype: Response
+
+        :raises ConnError: if there is no valid connection to a device,
+            usually because a previous call to ``connect()`` has failed
+        """
+        return self._loop.run_until_complete(
+            self.async_set_schedule_state(enable))
+
+    async def async_set_schedule_state(self, enable):
         """Enable/disable the light schedule.
 
         :param enable: Schedule Enable (*True*) / Schedule Disable (*False*)
@@ -444,27 +540,26 @@ class AquaIPy:
         """
         self._validate_connection()
         data = {"enable": enable}
-        resp = requests.put(
-            self._base_path + "/schedule/enable", data=json.dumps(data))
 
-        r_data = None
+        path = "{0}/{1}".format(self._base_path, "schedule/enable")
+        async with self._session.put(path, data=json.dumps(data)) as resp:
 
-        r_data = resp.json()
+            r_data = await resp.json()
 
-        if r_data is None:
-            return Response.Error
+            if r_data is None:
+                return Response.Error
 
-        if r_data['response_code'] != 0:
-            return Response.Error
+            if r_data['response_code'] != 0:
+                return Response.Error
 
-        return Response.Success
+            return Response.Success
 
     ###########################
     # Color Control / Intensity
     ###########################
 
     def get_colors(self):
-        """Get the list of valid colors to pass to other colors methods.
+        """Get the list of valid colors for other methods, synchronously.
 
         :returns: list of valid colors or *None* if there's an error
         :rtype: list( color_1..color_n ) or None
@@ -472,9 +567,20 @@ class AquaIPy:
         :raises ConnError: if there is no valid connection to a device,
             usually because a previous call to ``connect()`` has failed
         """
+        return self._loop.run_until_complete(self.async_get_colors())
+
+    async def async_get_colors(self):
+        """Get the list of valid colors to pass to other colors methods.
+
+        :returns: list of valid colors or *None* if there's an error
+        :rtype: list( color_1..color_n ) or None
+
+        :raises ConnError: if there is no valid connection to a device,
+            usually because a previous call to ``async_connect()`` has failed
+        """
         colors = []
 
-        resp, data = self._get_brightness()
+        resp, data = await self._async_get_brightness()
 
         if resp != Response.Success:
             return None
@@ -485,6 +591,19 @@ class AquaIPy:
         return colors
 
     def get_colors_brightness(self):
+        """Get the current brightness of all color channels, synchronously.
+
+        :returns: dictionary of color and brightness percentages, or *None* if
+            there's an error
+        :rtype: dict( color_1=percentage_1..color_n=percentage_n ) or None
+
+        :raises ConnError: if there is no valid connection to a device,
+            usually because a previous call to ``connect()`` has failed
+        """
+        return self._loop.run_until_complete(
+            self.async_get_colors_brightness())
+
+    async def async_get_colors_brightness(self):
         """Get the current brightness of all color channels.
 
         :returns: dictionary of color and brightness percentages, or *None* if
@@ -497,7 +616,7 @@ class AquaIPy:
         colors = {}
 
         # Get current brightness, for each colour channel
-        resp_b, brightness = self._get_brightness()
+        resp_b, brightness = await self._async_get_brightness()
 
         if resp_b != Response.Success:
             return None
@@ -509,6 +628,21 @@ class AquaIPy:
         return colors
 
     def set_colors_brightness(self, colors):
+        """Set all colors to the specified color percentage, synchronously.
+
+        :param colors: dictionary of colors and percentage values
+        :type colors: dict( color_1=percentage_1..color_n=percentage_n )
+        :returns: Response.Success if it works, or a value indicating the
+            error, if there is an issue.
+        :rtype: Response
+
+        :raises ConnError: if there is no valid connection to a device,
+            usually because a previous call to ``connect()`` has failed
+        """
+        return self._loop.run_until_complete(
+            self.async_set_colors_brightness(colors))
+
+    async def async_set_colors_brightness(self, colors):
         """Set all colors to the specified color percentage.
 
         ..  note:: All colors returned by *get_colors()* must be specified.
@@ -523,7 +657,7 @@ class AquaIPy:
             usually because a previous call to ``connect()`` has failed
         """
         # Need to add better validation here
-        if len(colors) < len(self.get_colors()):
+        if len(colors) < len(await self.async_get_colors()):
             return Response.AllColorsMustBeSpecified
 
         intensities = {}
@@ -556,10 +690,25 @@ class AquaIPy:
                               str(mw_value)))
                 return Response.PowerLimitExceeded
 
-        return self._set_brightness(intensities)
+        return await self._async_set_brightness(intensities)
 
     def patch_colors_brightness(self, colors):
-        """Set specified colors, to the specified percentage brightness.
+        """Set specified colors to the given percentage values, sychronously.
+
+        :param colors: Specify just the colors that should be updated
+        :type colors: dict( color_1=percentage_1..color_n=percentage_n )
+        :returns: Response.Success if it works, or a value indicating the
+            error, if there is an issue.
+        :rtype: Response
+
+        :raises ConnError: if there is no valid connection to a device,
+            usually because a previous call to ``connect()`` has failed
+        """
+        return self._loop.run_until_complete(
+            self.async_patch_colors_brightness(colors))
+
+    async def async_patch_colors_brightness(self, colors):
+        """Set specified colors to the given percentage brightness.
 
         :param colors: Specify just the colors that should be updated
         :type colors: dict( color_1=percentage_1..color_n=percentage_n )
@@ -573,7 +722,7 @@ class AquaIPy:
         if len(colors) < 1:
             return Response.InvalidData
 
-        brightness = self.get_colors_brightness()
+        brightness = await self.async_get_colors_brightness()
 
         if brightness is None:
             return Response.Error
@@ -581,9 +730,26 @@ class AquaIPy:
         for color, value in colors.items():
             brightness[color] = value
 
-        return self.set_colors_brightness(brightness)
+        return await self.async_set_colors_brightness(brightness)
 
     def update_color_brightness(self, color, value):
+        """Update a given color by the specified brightness, synchronously.
+
+        :param color: color to change
+        :param value: value to change percentage by
+        :type color: str
+        :type value: float
+        :returns: Response.Success if it works, or a value indicating the
+            error, if there is an issue.
+        :rtype: Response
+
+        :raises ConnError: if there is no valid connection to a device,
+            usually because a previous call to ``connect()`` has failed.
+        """
+        return self._loop.run_until_complete(
+            self.async_update_color_brightness(color, value))
+
+    async def async_update_color_brightness(self, color, value):
         """Update a given color by the specified brightness percentage.
 
         :param color: color to change
@@ -604,11 +770,11 @@ class AquaIPy:
         if value == 0:
             return Response.Success
 
-        brightness = self.get_colors_brightness()
+        brightness = await self.async_get_colors_brightness()
 
         if brightness is None:
             return Response.Error
 
         brightness[color] += value
 
-        return self.set_colors_brightness(brightness)
+        return await self.async_set_colors_brightness(brightness)

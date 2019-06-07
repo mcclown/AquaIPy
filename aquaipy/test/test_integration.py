@@ -27,6 +27,8 @@ def ai_instance():
     ai_instance.set_schedule_state(sched_state)
     ai_instance.set_colors_brightness(color_state)
 
+    ai_instance.close()
+
 
 @endpoint_defined
 @pytest.mark.parametrize("percent", [0, 50, 100])
