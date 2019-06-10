@@ -19,9 +19,11 @@ that is required is.::
 
         >>> from aquaipy import AquaIPy
         >>> ai = AquaIPy()
-        >>> ai.connect("192.168.1.10") 
+        >>> await ai.async_connect("192.168.1.10") 
 
-This will verify connectivity to the light and check the firmware version is supported.
+This will verify connectivity to the light and check the firmware version is supported. In the case where you have multiple
+lights paired together, AquaIPy expects to be connected to the parent/primary light, of the group and will give an error if
+it is connected to one of the child lights.
 
 
 Getting/Setting the schedule state
@@ -33,12 +35,12 @@ library, the colors will only change for a second and then change back to the sc
 
 Getting the schedule state is easy.::
 
-        >>> ai.get_schedule_state()
+        >>> await ai.async_get_schedule_state()
         True
 
 Setting it is easy as well.::
 
-        >>> ai.set_schedule_state(False)
+        >>> await ai.async_set_schedule_state(False)
         <Response.Success: 0>
 
 
@@ -55,13 +57,13 @@ Getting the colors
 
 The API will only accept certain colors, you can get the ``list`` of valid colors with the following call.::
 
-        >>> ai.get_colors()
+        >>> await ai.async_get_colors()
         ['deep_red', 'royal', 'cool_white', 'violet', 'green', 'blue', 'uv']
 
 
 It's also possible to retrieve the list of the colours and their current state with the following call.::
 
-        >>> ai.get_colors_brightness()
+        >>> await ai.async_get_colors_brightness()
         {'blue': 18.7,
          'cool_white': 4.4,
          'deep_red': 1.0,
@@ -80,19 +82,19 @@ color channel.
 All colors can be set in one call to the function below, by providing a ``dict`` of colors and their percentage 
 value.::
 
-        >>> ai.set_colors_brightness(all_colors)
+        >>> await ai.async_set_colors_brightness(all_colors)
         <Response.Success: 0>
 
 It also possible to modify only a subset of the colors by providing them as a ``dict``.::
 
-        >>> ai.patch_colors_brightness(subset_colors)
+        >>> await ai.async_patch_colors_brightness(subset_colors)
         <Response.Success: 0>
 
 Lastly, it's possible to update a given color channel by a specified percentage.::
 
-        >>> ai.update_color_brightness('cool_white', 33.333)
+        >>> await ai.async_update_color_brightness('cool_white', 33.333)
         <Response.Success: 0>
-        >>> ai.update_color_brightness('deep_red', -15.2)
+        >>> await ai.async_update_color_brightness('deep_red', -15.2)
         <Response.Success: 0>
 
 
@@ -103,7 +105,7 @@ The library can return a number of response codes as ``Response`` objects. The r
 of are below. If any of the these error response codes are returned, then the call will have failed and no changes will 
 have been made:
 
-* ``Response.AllColorsMustBeSpecified`` - returned when a call to ``set_colors_brightness()`` doesn't include all colors.
+* ``Response.AllColorsMustBeSpecified`` - returned when a call to ``async_set_colors_brightness()`` doesn't include all colors.
 * ``Response.PowerLimitExceeded`` - returned when a call to one of the methods that updates the colors, would have exceeded the max wattage allowed for the targeted light. 
 * ``Response.InvalidData`` - returned when invalid data is supplied to one of the methods that updates the colors.
 
