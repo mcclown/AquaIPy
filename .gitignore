@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# vim cache files
+*.swp
+
+# pytest settings file, for integration tests.
+pytest.ini

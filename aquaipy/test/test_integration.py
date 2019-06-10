@@ -25,9 +25,9 @@ def ai_instance():
 
     #Restore light state
     ai_instance.set_schedule_state(sched_state)
+    ai_instance.set_colors_brightness(color_state)
 
-    if not sched_state:
-        ai_instance.set_colors_brightness(color_state)
+    ai_instance.close()
 
 
 @endpoint_defined

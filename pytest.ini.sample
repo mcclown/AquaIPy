@@ -1,0 +1,2 @@
+[pytest]
+aquaillumination_endpoint = 192.168.1.2

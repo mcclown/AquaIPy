@@ -26,7 +26,7 @@ long_description = read('README.rst')
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ["-rxXs"]
+        self.test_args = ["-rs"]
         self.test_suite = True
 
     def run_tests(self):
@@ -52,7 +52,7 @@ setup(
     license='Apache Software License',
     author='Stephen Mc Gowan',
     tests_require=['pytest'],
-    install_requires=['requests>=2.18.4'],
+    install_requires=['asyncio>=3.4.3', 'aiohttp>=3.5.4'],
     cmdclass={'test': PyTest, 'clean': CleanCommand},
     author_email='mcclown@gmail.com',
     description='Python library for controlling the AquaIllumination range of aquarium lights',
