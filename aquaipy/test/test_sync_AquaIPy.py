@@ -28,6 +28,7 @@ def bound_socket():
 def server_process(bound_socket):
 
     app = aiohttp.web.Application()
+    set_schedule_request = None
     
     def identity_handler(request):
         return web.json_response(data=TestData.identity_hydra26hd())
@@ -35,16 +36,25 @@ def server_process(bound_socket):
     def power_handler(request):
         return web.json_response(data=TestData.power_hydra26hd())
 
-    def schedule_state_handler(request):
+    def get_schedule_state_handler(request):
         return web.json_response(data=TestData.schedule_enabled())
 
-    def colors_handler(request):
-        return web.json_response(data=TestData.colors_1())
+    def get_colors_handler(request):
+        return web.json_response(data=TestData.colors_3())
 
-    app.router.add_route('get', '/api/identity', identity_handler)
-    app.router.add_route('get', '/api/power', power_handler)
-    app.router.add_route('get', '/api/schedule/enable', schedule_state_handler)
-    app.router.add_route('get', '/api/colors', colors_handler)
+    def set_schedule_state_handler(request):
+        return web.json_response(data=TestData.server_success())
+
+    def set_colors_brightness_handler(request):
+        return web.json_response(data=TestData.server_success())
+
+    app.router.add_route('GET', '/api/identity', identity_handler)
+    app.router.add_route('GET', '/api/power', power_handler)
+    app.router.add_route('GET', '/api/schedule/enable', get_schedule_state_handler)
+    app.router.add_route('GET', '/api/colors', get_colors_handler)
+
+    app.router.add_route('PUT', '/api/schedule/enable', set_schedule_state_handler)
+    app.router.add_route('POST', '/api/colors', set_colors_brightness_handler)
 
     def run_server():
         aiohttp.web.run_app(app, handle_signals=True, sock=bound_socket)
@@ -76,19 +86,21 @@ def ai_instance(bound_socket, server_process):
 
     api._validate_connection()
 
-    return api
- 
+    yield api
+
+    api.close()
+
 
 def test_sync_connect_and_close(ai_instance):
 
     ai_instance._validate_connection()
-    ai_instance.close()
+
+    #close automatically happens in the ai_instance fixture
 
 
 def test_sync_get_schedule_state(ai_instance):
 
     assert ai_instance.get_schedule_state()
-    ai_instance.close()
 
 
 def test_sync_get_colors(ai_instance):
@@ -99,7 +111,34 @@ def test_sync_get_colors(ai_instance):
     for color in expected_colors:
         assert returned_colors.index(color) >= 0
 
-    ai_instance.close()
+
+def test_sync_get_colors_brightness(ai_instance):
+
+    expected_result = TestData.get_colors_3()
+    returned_colors = ai_instance.get_colors_brightness()
+
+    for color, value in returned_colors.items():
+        assert expected_result[color] == value
+
+
+def test_sync_set_schedule_state(ai_instance):
+
+    assert ai_instance.set_schedule_state(True) == Response.Success
+
+
+def test_sync_set_colors_brightness(ai_instance):
+
+    assert ai_instance.set_colors_brightness(TestData.set_colors_3()) == Response.Success
+
+
+def test_sync_patch_colors_brightness(ai_instance):
+
+    assert ai_instance.patch_colors_brightness(TestData.set_colors_3()) == Response.Success
+
+
+def test_sync_update_color_brightness(ai_instance):
+
+    assert ai_instance.update_color_brightness('deep_red', 10) == Response.Success
 
 
 

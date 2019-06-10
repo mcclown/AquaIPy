@@ -207,6 +207,18 @@ class TestData:
         "blue": 0,
         "royal": 117,
     }
+
+    @staticmethod
+    def get_colors_3():
+        return {
+        "deep_red": 0,
+        "uv": 42.4,
+        "violet": 104.78739920732541,
+        "cool_white": 0,
+        "green": 0,
+        "blue": 0,
+        "royal": 117.23028298727394,
+    }
     
     @staticmethod
     def set_colors_max_hd_primehd():

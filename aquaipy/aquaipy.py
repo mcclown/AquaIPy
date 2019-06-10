@@ -224,14 +224,18 @@ class AquaIPy:
         self._other_devices = []
 
         self._loop = loop
+        self._loop_is_local = True
 
-        try:
-            self._loop = asyncio.get_event_loop()
-            self._loop_is_local = False
-        except RuntimeError:
-            self._loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self._loop)
-            self._loop_is_local = True
+        if self._loop is None:
+
+            try:
+                self._loop = asyncio.get_event_loop()
+                self._loop_is_local = False
+            except RuntimeError:
+                self._create_new_event_loop()
+
+        if self._loop.is_closed():
+            self._create_new_event_loop()
 
         if session is None:
             self._session = aiohttp.ClientSession()
@@ -384,6 +388,12 @@ class AquaIPy:
         """Verify connection, raise Error if not available."""
         if self._base_path is None:
             raise ConnError("Error connecting to host", self._host)
+
+    def _create_new_event_loop(self):
+        """Create a new asyncio event loop."""
+        self._loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self._loop)
+        self._loop_is_local = True
 
     async def _async_setup_device_details(self, check_firmware_support):
         """Verify connection to the device and populate device attributes."""

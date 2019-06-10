@@ -720,12 +720,50 @@ async def test_AquaIPy_set_color_brightness_hd_exceeded(device, identity_respons
 
     await api._session.close()
 
-@pytest.mark.asyncio
-async def test_init_with_session():
+
+""" These aren't async tests but they conflict with the fixtures used for the
+    synchronous tests, so I'm adding them here instead.
+"""
+
+
+def test_init_with_session():
 
     session = aiohttp.ClientSession()
 
     api = AquaIPy(session=session)
 
     api.close()
+
+
+def test_init_with_no_asyncio_loop_running():
+
+    #Close current loop 
+    loop = asyncio.get_event_loop()
+    loop.stop()
+    pending_tasks = asyncio.Task.all_tasks()
+    loop.run_until_complete(asyncio.gather(*pending_tasks))
+    loop.close()
+
+    api = AquaIPy()
+
+    api.close()
+
+    #Add new loop again
+    new_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(new_loop)
+
+
+def test_init_with_specified_loop():
+
+    loop = asyncio.get_event_loop()
+
+    api = AquaIPy(loop=loop)
+
+
+@patch("aquaipy.aquaipy.asyncio.get_event_loop", side_effect=RuntimeError("Testing this exception handling."))
+def test_init_get_event_loop_error(mock_get):
+
+    with pytest.raises(RuntimeError):
+        api = AquaIPy()
+
 
