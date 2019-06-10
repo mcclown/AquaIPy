@@ -11,7 +11,8 @@ Introduction
 ------------
 
 AquaIPy exposes the functionality that is usually available, via the AquaIllumination mobile phone app or web app,
-for the Prime HD and Hydra HD ranges of aquarium lights. 
+for the Prime HD and Hydra HD ranges of aquarium lights. AquaIPy is written with full async support, using asyncio
+but also provides synchronous wrappers for all functions.
 
 This has been tested and validated with a Prime HD and a Hydra 26HD. It should work with a Hydra 52HD but I don't 
 own one to test against, contact me if you have one and you are willing to help me validate the library. In theory 

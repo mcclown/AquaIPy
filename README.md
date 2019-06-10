@@ -24,6 +24,8 @@ Quickstart
 
 Install aquaipy using `pip`: `$ pip install aquaipy`. Once that is complete you can import the AquaIPy class and connect to your lights.
 
+In this guide synchronous calls are shown but v2.0.0 of AquaIPy was a we-write, to provide async support. Synchronous functions are still supported but they are just wrappers of the async functions.
+
 ```python
 >>> from aquaipy import AquaIPy
 >>> ai = AquaIPy()
