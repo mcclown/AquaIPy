@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.org/mcclown/AquaIPy.svg?branch=master)](https://travis-ci.org/mcclown/AquaIPy)
 [![Coverage Status](https://coveralls.io/repos/mcclown/AquaIPy/badge.svg?branch=master&service=github)](https://coveralls.io/github/mcclown/AquaIPy?branch=master)
-
+[![Python >=3.5.3](https://img.shields.io/badge/python->=3.5.3-blue.svg)]
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)]
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)]
 
 A module for working with the AquaIllumination range of aquarium lights. The following functions are currently supported
 

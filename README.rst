@@ -1,7 +1,8 @@
 AquaIPy
 =======
 
-|Build Status| |Coverage Status|
+|Build Status| |Coverage Status| [|Python >=3.5.3|][|Python 3.6|]
+[|Python 3.7|]
 
 A module for working with the AquaIllumination range of aquarium lights.
 The following functions are currently supported
@@ -69,3 +70,7 @@ open an issue on GitHub
    :target: https://travis-ci.org/mcclown/AquaIPy
 .. |Coverage Status| image:: https://coveralls.io/repos/mcclown/AquaIPy/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/mcclown/AquaIPy?branch=master
+.. |Python >=3.5.3| image:: https://img.shields.io/badge/python-%3E=3.5.3-blue.svg
+.. |Python 3.6| image:: https://img.shields.io/badge/python-3.6-blue.svg
+.. |Python 3.7| image:: https://img.shields.io/badge/python-3.7-blue.svg
+
