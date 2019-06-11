@@ -7,6 +7,7 @@ install:
   - travis_retry python setup.py develop
   - travis_retry pip install pytest-cov coverage coveralls
 script:
-  - coverage run --source=aquaipy setup.py test
+  - coverage run -m py.test
+  - coverage combine
 after_success:
   coveralls
