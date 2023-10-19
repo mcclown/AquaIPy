@@ -7,3 +7,4 @@ pytest-asyncio==0.10.0
 pytest-aiohttp==0.3.0
 asynctest==0.12.3
 async-generator==1.10
+urllib3>=1.26.18 # not directly required, pinned by Snyk to avoid a vulnerability
